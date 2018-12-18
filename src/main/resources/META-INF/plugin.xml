@@ -6,25 +6,12 @@
     <description>Eventbank's ai coder plugin, build by timothy</description>
     <change-notes>this plugin first build, by timothy, company eventbank</change-notes>
 
-    <change-notes><![CDATA[
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>
-    ]]>
-    </change-notes>
-
-    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-    <idea-version since-build="141.0"/>
-
-    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
-         on how to target different products -->
-    <!-- uncomment to enable plugin in all products
     <depends>com.intellij.modules.lang</depends>
-    -->
 
     <actions>
-        <group id="Eventbank" text="Greeting" description="Greeting menu">
+        <group id="Eventbank" text="Eventbank" description="Eventbank Tools">
             <add-to-group group-id="MainMenu" anchor="last" />
-            <action id="AiCoder" class="com.sevendark.ai.plugin.AiCoder" text="Hello" description="Say Hello" />
+            <action id="AiCoder" class="com.sevendark.ai.plugin.AiCoder" text="Option2Optional" description="update play F.Option to java.util.Optional" />
         </group>
     </actions>
 </idea-plugin>
