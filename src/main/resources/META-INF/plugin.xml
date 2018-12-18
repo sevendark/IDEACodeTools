@@ -1,0 +1,30 @@
+<idea-plugin>
+    <id>com.sevendark.ai.plugin.AiCoder</id>
+    <name>AiCoder</name>
+    <version>0.0.1</version>
+    <vendor email="timothy.ji@eventbank.com" url="http://www.eventbank.com">Eventbank</vendor>
+    <description>Eventbank's ai coder plugin, build by timothy</description>
+    <change-notes>this plugin first build, by timothy, company eventbank</change-notes>
+
+    <change-notes><![CDATA[
+      Add change notes here.<br>
+      <em>most HTML tags may be used</em>
+    ]]>
+    </change-notes>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+    <idea-version since-build="141.0"/>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <!-- uncomment to enable plugin in all products
+    <depends>com.intellij.modules.lang</depends>
+    -->
+
+    <actions>
+        <group id="Eventbank" text="Greeting" description="Greeting menu">
+            <add-to-group group-id="MainMenu" anchor="last" />
+            <action id="AiCoder" class="com.sevendark.ai.plugin.AiCoder" text="Hello" description="Say Hello" />
+        </group>
+    </actions>
+</idea-plugin>
