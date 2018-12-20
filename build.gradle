@@ -1,27 +1,33 @@
+buildscript {
+    repositories {
+        maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
+    }
+}
 plugins {
     id 'java'
     id 'org.jetbrains.intellij' version '0.3.12'
 }
 
-group 'com.sevendark.ai'
-version '1.0-SNAPSHOT'
-
-sourceCompatibility = 1.8
-
 repositories {
+    mavenLocal()
     maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
     maven { url 'http://maven.aliyun.com/nexus/content/repositories/jcenter'}
+    mavenCentral()
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile group: 'org.projectlombok', name: 'lombok', version: '1.18.4'
 }
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 intellij {
     version '2018.3'
+    pluginName 'AiCoder'
+    updateSinceUntilBuild false
+    plugins = ["org.intellij.scala:2018.3.4"]
 }
-patchPluginXml {
-    changeNotes """
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>"""
-}
+
+group 'com.sevendark.ai'
+version '1.0-SNAPSHOT'

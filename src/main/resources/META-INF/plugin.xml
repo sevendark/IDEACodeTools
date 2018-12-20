@@ -3,10 +3,26 @@
     <name>AiCoder</name>
     <version>0.0.1</version>
     <vendor email="timothy.ji@eventbank.com" url="http://www.eventbank.com">Eventbank</vendor>
-    <description>Eventbank's ai coder plugin, build by timothy</description>
-    <change-notes>this plugin first build, by timothy, company eventbank</change-notes>
 
-    <depends>com.intellij.modules.lang</depends>
+    <description><![CDATA[
+    <p>Eventbank's idea plugin, build for some tools</p>
+    ]]></description>
+
+    <change-notes><![CDATA[
+    <ul>
+        <li>version 1.0<br/>
+        first build for change play.F.Option to java.util.Optional
+        </li>
+    </ul>
+    ]]></change-notes>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+    <idea-version since-build="183"/>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.java</depends>
+    <depends optional="true">org.intellij.scala</depends>
 
     <actions>
         <group id="Eventbank" text="Eventbank" description="Eventbank Tools">
