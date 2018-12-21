@@ -45,8 +45,6 @@ public class AiCoder extends AnAction {
             showErrorMsg("Can't find java.util.Optional");
             return;
         }
-        final Object updateOptionGroup = new Object();
-        final String commandName = "updateOption";
 
         CommandProcessor.getInstance().executeCommand(project, () -> ApplicationManager.getApplication()
                 .runWriteAction(() -> {
@@ -63,7 +61,7 @@ public class AiCoder extends AnAction {
                             javaCode.getParent().replace(javaOptionalImport);
                         }
                     });
-                }), commandName, updateOptionGroup);
+                }), "Option2Optional", "Eventbank");
     }
 
     private Optional<Module> getEbRest(Project project) {
