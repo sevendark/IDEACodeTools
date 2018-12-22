@@ -1,5 +1,6 @@
 package com.sevendark.ai.plugin;
 
+import com.intellij.lang.jvm.JvmMethod;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -45,11 +46,13 @@ public class AiCoder extends AnAction {
             showErrorMsg("Can't find java.util.Optional");
             return;
         }
+        JvmMethod someMethod = option.findMethodsByName("Some")[0];
+        JvmMethod isDefinedMethod = option.findMethodsByName("isDefined")[0];
 
         CommandProcessor.getInstance().executeCommand(project, () -> ApplicationManager.getApplication()
                 .runWriteAction(() -> {
                     Query<PsiReference> search = ReferencesSearch.search(option, eb_rest.getModuleScope());
-                    PsiImportStatement javaOptionalImport = javaFactory.createImportStatement(optional);
+                    PsiJavaCodeReferenceElement optionalRef = javaFactory.createClassReferenceElement(optional);
                     search.forEach(e -> {
                         PsiJavaCodeReferenceElement javaCode;
                         if (e instanceof PsiJavaCodeReferenceElement) {
@@ -57,9 +60,15 @@ public class AiCoder extends AnAction {
                         } else {
                             return;
                         }
-                        if (javaCode.getParent() instanceof PsiImportStatement) {
-                            javaCode.getParent().replace(javaOptionalImport);
-                        }
+                        javaCode.replace(optionalRef);
+                    });
+                    search = ReferencesSearch.search(Objects.requireNonNull(someMethod.getSourceElement()), eb_rest.getModuleScope());
+                    search.forEach(e -> {
+                        System.out.println(e);
+                    });
+                    search = ReferencesSearch.search(Objects.requireNonNull(isDefinedMethod.getSourceElement()), eb_rest.getModuleScope());
+                    search.forEach(e -> {
+                        System.out.println(e);
                     });
                 }), "Option2Optional", "Eventbank");
     }
