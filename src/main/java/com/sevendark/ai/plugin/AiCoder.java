@@ -1,6 +1,5 @@
 package com.sevendark.ai.plugin;
 
-import com.intellij.lang.jvm.JvmMethod;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -18,8 +17,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiManager;
 import scala.Option;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Optional.*;
 
@@ -52,6 +54,7 @@ public class AiCoder extends AnAction {
         CommandProcessor.getInstance().executeCommand(project, () -> ApplicationManager.getApplication()
                 .runWriteAction(() -> {
                     Query<PsiReference> search = ReferencesSearch.search(option, eb_rest.getModuleScope());
+                    List<PsiFile> changedFile = new ArrayList<>();
                     search.forEach(e -> {
                         PsiJavaCodeReferenceElement javaCode;
                         if (e instanceof PsiJavaCodeReferenceElement) {
@@ -59,6 +62,8 @@ public class AiCoder extends AnAction {
                         } else {
                             return;
                         }
+                        AtomicReference<PsiElement> replaced = new AtomicReference<>();
+                        changedFile.add(javaCode.getContainingFile());
                         if (javaCode.getParent() instanceof PsiReferenceExpression) {
 
                             PsiMethodCallExpression originCall = (PsiMethodCallExpression) javaCode.getParent().getParent();
@@ -71,7 +76,7 @@ public class AiCoder extends AnAction {
                                                 "java.util.Optional.ofNullable(arg)",
                                                 null);
                                 ofNullableCall.getArgumentList().replace(originCall.getArgumentList());
-                                originCall.replace(ofNullableCall);
+                                replaced.set(originCall.replace(ofNullableCall));
 
                             } else if (Objects.equals(originCall.getMethodExpression().getQualifiedName(),
                                     "Option.None")) {
@@ -80,42 +85,51 @@ public class AiCoder extends AnAction {
                                         (PsiMethodCallExpression) javaFactory.createExpressionFromText(
                                                 "java.util.Optional.empty()",
                                                 null);
-                                originCall.replace(emptyCall);
+                                replaced.set(originCall.replace(emptyCall));
 
                             }
 
                         } else if (javaCode.getParent() instanceof PsiTypeElement) {
                             PsiJavaCodeReferenceElement optionalRef = javaFactory.createReferenceElementByType(
                                     javaFactory.createType(optional, javaCode.getTypeParameters()));
-                            PsiElement replaced = javaCode.replace(optionalRef);
-                            if(replaced.getParent().getParent() instanceof PsiLocalVariable){
-                                PsiLocalVariable variable = (PsiLocalVariable) replaced.getParent().getParent();
+                            replaced.set(javaCode.replace(optionalRef));
+                            if(Objects.nonNull(replaced.get())){
+                                codeStyleManager.shortenClassReferences(replaced.get());
+                            }
+                            if(replaced.get().getParent().getParent() instanceof PsiLocalVariable){
+                                PsiLocalVariable variable = (PsiLocalVariable) replaced.get().getParent().getParent();
                                 Query<PsiReference> variableSearch = ReferencesSearch.search(variable, variable.getResolveScope());
                                 variableSearch.forEach(m ->{
                                     PsiReferenceExpression variableRef = ((PsiReferenceExpression) m);
                                     if(variableRef.getParent().getParent() instanceof PsiMethodCallExpression){
                                         PsiMethodCallExpression variableCall = (PsiMethodCallExpression) variableRef.getParent().getParent();
-                                        if(Objects.equals("Option.isDefined", variableCall.getMethodExpression().getQualifiedName())){
+                                        if(variableCall.getMethodExpression().getLastChild().textMatches("isDefined")){
                                             final PsiMethodCallExpression isPresentCall =
                                                     (PsiMethodCallExpression) javaFactory.createExpressionFromText(
                                                             "arg.isPresent()",
                                                             null);
-                                            isPresentCall.getMethodExpression().getQualifierExpression().replace(variableCall.getMethodExpression().getQualifierExpression());
-                                            variableCall.replace(isPresentCall);
-                                        }else if(Objects.equals("Option.isEmpty", variableCall.getMethodExpression().getQualifiedName())){
-                                            final PsiMethodCallExpression isNotPresentCall =
-                                                    (PsiMethodCallExpression) javaFactory.createExpressionFromText(
+                                            isPresentCall.getMethodExpression().getQualifierExpression()
+                                                    .replace(variableCall.getMethodExpression().getQualifierExpression());
+                                            replaced.set(variableCall.replace(isPresentCall));
+                                        }else if(variableCall.getMethodExpression().getLastChild().textMatches("isEmpty")){
+                                            final PsiPrefixExpression isNotPresent =
+                                                    (PsiPrefixExpression) javaFactory.createExpressionFromText(
                                                             "!arg.isPresent()",
                                                             null);
-                                            isNotPresentCall.getMethodExpression().getQualifierExpression().replace(variableCall.getMethodExpression().getQualifierExpression());
-                                            variableCall.replace(isNotPresentCall);
+                                            PsiMethodCallExpression isNotPresentCall = (PsiMethodCallExpression) isNotPresent.getLastChild();
+                                            isNotPresentCall.getMethodExpression().getQualifierExpression()
+                                                    .replace(variableCall.getMethodExpression().getQualifierExpression());
+                                            replaced.set(variableCall.replace(isNotPresent));
                                         }
                                     }
                                 });
                             }
                         }
+                        if(Objects.nonNull(replaced.get())){
+                            codeStyleManager.shortenClassReferences(replaced.get());
+                        }
                     });
-                    // codeStyleManager.optimizeImports(javaCode.getContainingFile());
+                    changedFile.forEach(codeStyleManager::optimizeImports);
                 }), "Option2Optional", EB);
     }
 
