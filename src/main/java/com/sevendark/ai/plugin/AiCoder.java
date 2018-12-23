@@ -121,6 +121,25 @@ public class AiCoder extends AnAction {
                                                     .replace(variableCall.getMethodExpression().getQualifierExpression());
                                             replaced.set(variableCall.replace(isNotPresent));
                                         }
+                                    }else if (variableRef.getParent() instanceof PsiForeachStatement){
+                                        PsiForeachStatement foreachStatement = (PsiForeachStatement) variableRef.getParent();
+                                        PsiBlockStatement foreachBlock = (PsiBlockStatement) foreachStatement.getLastChild();
+                                        Query<PsiReference> iteraVarSearch = ReferencesSearch.search(foreachStatement.getIterationParameter(), foreachBlock.getResolveScope());
+                                        iteraVarSearch.forEach(iv ->{
+                                            PsiReferenceExpression iteraVarInBlock = (PsiReferenceExpression) iv;
+                                            iteraVarInBlock.replace(variableRef);
+                                        });
+                                        final PsiMethodCallExpression isPresentCall =
+                                                (PsiMethodCallExpression) javaFactory.createExpressionFromText(
+                                                        "arg.isPresent()",
+                                                        null);
+                                        isPresentCall.getMethodExpression().getQualifierExpression().replace(variableRef);
+                                        PsiIfStatement ifStatement = (PsiIfStatement)
+                                                javaFactory.createStatementFromText(
+                                                        "if ( arg ) {}", null);
+                                        ifStatement.getCondition().replace(isPresentCall);
+                                        ifStatement.getThenBranch().replace(foreachBlock);
+                                        variableRef.getParent().replace(ifStatement);
                                     }
                                 });
                             }
