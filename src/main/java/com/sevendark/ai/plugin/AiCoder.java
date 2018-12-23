@@ -10,6 +10,7 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.*;
+import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.util.Query;
@@ -46,13 +47,11 @@ public class AiCoder extends AnAction {
             showErrorMsg("Can't find java.util.Optional");
             return;
         }
-        JvmMethod someMethod = option.findMethodsByName("Some")[0];
-        JvmMethod isDefinedMethod = option.findMethodsByName("isDefined")[0];
+        final JavaCodeStyleManager codeStyleManager = JavaCodeStyleManager.getInstance(project);
 
         CommandProcessor.getInstance().executeCommand(project, () -> ApplicationManager.getApplication()
                 .runWriteAction(() -> {
                     Query<PsiReference> search = ReferencesSearch.search(option, eb_rest.getModuleScope());
-                    PsiJavaCodeReferenceElement optionalRef = javaFactory.createClassReferenceElement(optional);
                     search.forEach(e -> {
                         PsiJavaCodeReferenceElement javaCode;
                         if (e instanceof PsiJavaCodeReferenceElement) {
@@ -60,17 +59,64 @@ public class AiCoder extends AnAction {
                         } else {
                             return;
                         }
-                        javaCode.replace(optionalRef);
+                        if (javaCode.getParent() instanceof PsiReferenceExpression) {
+
+                            PsiMethodCallExpression originCall = (PsiMethodCallExpression) javaCode.getParent().getParent();
+
+                            if (Objects.equals(originCall.getMethodExpression().getQualifiedName(),
+                                    "Option.Some")) {
+
+                                final PsiMethodCallExpression ofNullableCall =
+                                        (PsiMethodCallExpression) javaFactory.createExpressionFromText(
+                                                "java.util.Optional.ofNullable(arg)",
+                                                null);
+                                ofNullableCall.getArgumentList().replace(originCall.getArgumentList());
+                                originCall.replace(ofNullableCall);
+
+                            } else if (Objects.equals(originCall.getMethodExpression().getQualifiedName(),
+                                    "Option.None")) {
+
+                                final PsiMethodCallExpression emptyCall =
+                                        (PsiMethodCallExpression) javaFactory.createExpressionFromText(
+                                                "java.util.Optional.empty()",
+                                                null);
+                                originCall.replace(emptyCall);
+
+                            }
+
+                        } else if (javaCode.getParent() instanceof PsiTypeElement) {
+                            PsiJavaCodeReferenceElement optionalRef = javaFactory.createReferenceElementByType(
+                                    javaFactory.createType(optional, javaCode.getTypeParameters()));
+                            PsiElement replaced = javaCode.replace(optionalRef);
+                            if(replaced.getParent().getParent() instanceof PsiLocalVariable){
+                                PsiLocalVariable variable = (PsiLocalVariable) replaced.getParent().getParent();
+                                Query<PsiReference> variableSearch = ReferencesSearch.search(variable, variable.getResolveScope());
+                                variableSearch.forEach(m ->{
+                                    PsiReferenceExpression variableRef = ((PsiReferenceExpression) m);
+                                    if(variableRef.getParent().getParent() instanceof PsiMethodCallExpression){
+                                        PsiMethodCallExpression variableCall = (PsiMethodCallExpression) variableRef.getParent().getParent();
+                                        if(Objects.equals("Option.isDefined", variableCall.getMethodExpression().getQualifiedName())){
+                                            final PsiMethodCallExpression isPresentCall =
+                                                    (PsiMethodCallExpression) javaFactory.createExpressionFromText(
+                                                            "arg.isPresent()",
+                                                            null);
+                                            isPresentCall.getMethodExpression().getQualifierExpression().replace(variableCall.getMethodExpression().getQualifierExpression());
+                                            variableCall.replace(isPresentCall);
+                                        }else if(Objects.equals("Option.isEmpty", variableCall.getMethodExpression().getQualifiedName())){
+                                            final PsiMethodCallExpression isNotPresentCall =
+                                                    (PsiMethodCallExpression) javaFactory.createExpressionFromText(
+                                                            "!arg.isPresent()",
+                                                            null);
+                                            isNotPresentCall.getMethodExpression().getQualifierExpression().replace(variableCall.getMethodExpression().getQualifierExpression());
+                                            variableCall.replace(isNotPresentCall);
+                                        }
+                                    }
+                                });
+                            }
+                        }
                     });
-                    search = ReferencesSearch.search(Objects.requireNonNull(someMethod.getSourceElement()), eb_rest.getModuleScope());
-                    search.forEach(e -> {
-                        System.out.println(e);
-                    });
-                    search = ReferencesSearch.search(Objects.requireNonNull(isDefinedMethod.getSourceElement()), eb_rest.getModuleScope());
-                    search.forEach(e -> {
-                        System.out.println(e);
-                    });
-                }), "Option2Optional", "Eventbank");
+                    // codeStyleManager.optimizeImports(javaCode.getContainingFile());
+                }), "Option2Optional", EB);
     }
 
     private Optional<Module> getEbRest(Project project) {
