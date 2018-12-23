@@ -68,8 +68,7 @@ public class AiCoder extends AnAction {
 
                             PsiMethodCallExpression originCall = (PsiMethodCallExpression) javaCode.getParent().getParent();
 
-                            if (Objects.equals(originCall.getMethodExpression().getQualifiedName(),
-                                    "Option.Some")) {
+                            if (originCall.getMethodExpression().getLastChild().textMatches("Some")) {
 
                                 final PsiMethodCallExpression ofNullableCall =
                                         (PsiMethodCallExpression) javaFactory.createExpressionFromText(
@@ -78,8 +77,7 @@ public class AiCoder extends AnAction {
                                 ofNullableCall.getArgumentList().replace(originCall.getArgumentList());
                                 replaced.set(originCall.replace(ofNullableCall));
 
-                            } else if (Objects.equals(originCall.getMethodExpression().getQualifiedName(),
-                                    "Option.None")) {
+                            } else if (originCall.getMethodExpression().getLastChild().textMatches("None")) {
 
                                 final PsiMethodCallExpression emptyCall =
                                         (PsiMethodCallExpression) javaFactory.createExpressionFromText(
