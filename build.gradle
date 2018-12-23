@@ -3,6 +3,7 @@ buildscript {
         maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
     }
 }
+
 plugins {
     id 'java'
     id 'org.jetbrains.intellij' version '0.3.12'
@@ -10,8 +11,6 @@ plugins {
 
 repositories {
     mavenLocal()
-    maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
-    maven { url 'http://maven.aliyun.com/nexus/content/repositories/jcenter'}
     mavenCentral()
 }
 
@@ -29,7 +28,6 @@ publishPlugin {
     username intellijPublishUsername
     password intellijPublishPassword
 }
-
 
 group 'com.sevendark.ai'
 version '0.1'
