@@ -2,10 +2,10 @@ package com.sevendark.ai.plugin;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.*;
@@ -17,26 +17,30 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiManager;
 import scala.Option;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static java.util.Optional.*;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 
 public class AiCoder extends AnAction {
 
-    private static final String EB_REST_NAME = "untitled";
     private static final String EB = "Eventbank";
 
     public AiCoder() {
-        super("Eventbank");
+        super(EB);
     }
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent actionEvent) {
+        Module eb_rest = actionEvent.getRequiredData(LangDataKeys.MODULE);
         Project project = actionEvent.getProject();
-        Module eb_rest = getEbRest(project).orElse(null);
-        PsiClass option = getPlayOption(project).orElse(null);
-        if (Objects.isNull(project) || Objects.isNull(option) || Objects.isNull(eb_rest)) {
+        //Module eb_rest = getEbRest(project).orElse(null);
+        PsiClass option = getPlayOption(eb_rest).orElse(null);
+        if (Objects.isNull(project) || Objects.isNull(option)) {
             return;
         }
         JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(project);
@@ -209,26 +213,9 @@ public class AiCoder extends AnAction {
                 }), "Option2Optional", EB);
     }
 
-    private Optional<Module> getEbRest(Project project) {
-        if (Objects.isNull(project)) {
-            showErrorMsg("Can't find project");
-            return empty();
-        }
-        ModuleManager moduleManager = ModuleManager.getInstance(project);
-        Module eb_rest = moduleManager.findModuleByName(EB_REST_NAME);
-        if (Objects.isNull(eb_rest)) {
-            showErrorMsg("Can't find " + EB_REST_NAME);
-        }
-        return ofNullable(eb_rest);
-    }
-
-    private Optional<PsiClass> getPlayOption(Project project) {
-        Module module = getEbRest(project).orElse(null);
-        if (Objects.isNull(module)) {
-            return empty();
-        }
+    private Optional<PsiClass> getPlayOption(Module module) {
         GlobalSearchScope searchScope = GlobalSearchScope.moduleWithDependenciesAndLibrariesScope(module);
-        Option<PsiClass> f = ScalaPsiManager.instance(project).getCachedClass(searchScope, "play.libs.F");
+        Option<PsiClass> f = ScalaPsiManager.instance(module.getProject()).getCachedClass(searchScope, "play.libs.F");
         if (f.isEmpty()) {
             showErrorMsg("Can't find play.libs.F");
         }
@@ -240,10 +227,6 @@ public class AiCoder extends AnAction {
         }
         showErrorMsg("Can't find play.libs.F$Option");
         return empty();
-    }
-
-    private void showMsg(Object msg) {
-        Messages.showInfoMessage(Objects.toString(msg), EB);
     }
 
     private void showErrorMsg(Object msg) {
