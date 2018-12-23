@@ -1,3 +1,8 @@
+publishPlugin {
+    username intellijPublishUsername
+    password intellijPublishPassword
+}
+
 buildscript {
     repositories {
         maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
@@ -15,10 +20,6 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    compile group: 'org.projectlombok', name: 'lombok', version: '1.18.4'
-}
-
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
@@ -30,4 +31,4 @@ intellij {
 }
 
 group 'com.sevendark.ai'
-version '1.0-SNAPSHOT'
+version '0.1'
