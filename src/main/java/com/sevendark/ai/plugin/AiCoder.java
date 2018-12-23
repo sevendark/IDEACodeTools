@@ -17,10 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiManager;
 import scala.Option;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Optional.*;
@@ -53,8 +50,9 @@ public class AiCoder extends AnAction {
 
         CommandProcessor.getInstance().executeCommand(project, () -> ApplicationManager.getApplication()
                 .runWriteAction(() -> {
-                    Query<PsiReference> search = ReferencesSearch.search(option, eb_rest.getModuleScope());
-                    List<PsiFile> changedFile = new ArrayList<>();
+                    Set<PsiFile> changedFile = new HashSet<>();
+                    Query<PsiReference> search;
+                    search = ReferencesSearch.search(option, eb_rest.getModuleScope());
                     search.forEach(e -> {
                         PsiJavaCodeReferenceElement javaCode;
                         if (e instanceof PsiJavaCodeReferenceElement) {
@@ -144,6 +142,61 @@ public class AiCoder extends AnAction {
                         }
                         if(Objects.nonNull(replaced.get())){
                             codeStyleManager.shortenClassReferences(replaced.get());
+                        }
+                    });
+                    search = ReferencesSearch.search(option.findMethodsByName("None", false)[0], eb_rest.getModuleScope());
+                    search.forEach(e -> {
+                        PsiJavaCodeReferenceElement javaCode;
+                        if (e instanceof PsiJavaCodeReferenceElement) {
+                            javaCode = (PsiJavaCodeReferenceElement) e;
+                        } else {
+                            return;
+                        }
+                        changedFile.add(javaCode.getContainingFile());
+                        if (javaCode.getParent() instanceof PsiMethodCallExpression) {
+
+                            PsiMethodCallExpression originCall = (PsiMethodCallExpression) javaCode.getParent();
+                            AtomicReference<PsiElement> replaced = new AtomicReference<>();
+                            if (originCall.getMethodExpression().getLastChild().textMatches("None")) {
+
+                                final PsiMethodCallExpression emptyCall =
+                                        (PsiMethodCallExpression) javaFactory.createExpressionFromText(
+                                                "java.util.Optional.empty()",
+                                                null);
+                                replaced.set(originCall.replace(emptyCall));
+
+                            }
+                            if(Objects.nonNull(replaced.get())){
+                                codeStyleManager.shortenClassReferences(replaced.get());
+                            }
+                        }
+                    });
+                    search = ReferencesSearch.search(option.findMethodsByName("Some", false)[0], eb_rest.getModuleScope());
+                    search.forEach(e -> {
+                        PsiJavaCodeReferenceElement javaCode;
+                        if (e instanceof PsiJavaCodeReferenceElement) {
+                            javaCode = (PsiJavaCodeReferenceElement) e;
+                        } else {
+                            return;
+                        }
+                        changedFile.add(javaCode.getContainingFile());
+                        if (javaCode.getParent() instanceof PsiMethodCallExpression) {
+
+                            PsiMethodCallExpression originCall = (PsiMethodCallExpression) javaCode.getParent();
+                            AtomicReference<PsiElement> replaced = new AtomicReference<>();
+                            if (originCall.getMethodExpression().getLastChild().textMatches("Some")) {
+
+                                final PsiMethodCallExpression ofNullableCall =
+                                        (PsiMethodCallExpression) javaFactory.createExpressionFromText(
+                                                "java.util.Optional.ofNullable(arg)",
+                                                null);
+                                ofNullableCall.getArgumentList().replace(originCall.getArgumentList());
+                                replaced.set(originCall.replace(ofNullableCall));
+
+                            }
+                            if(Objects.nonNull(replaced.get())){
+                                codeStyleManager.shortenClassReferences(replaced.get());
+                            }
                         }
                     });
                     changedFile.forEach(codeStyleManager::optimizeImports);
