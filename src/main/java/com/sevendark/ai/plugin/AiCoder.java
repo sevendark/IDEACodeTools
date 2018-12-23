@@ -123,7 +123,13 @@ public class AiCoder extends AnAction {
                                         Query<PsiReference> iteraVarSearch = ReferencesSearch.search(foreachStatement.getIterationParameter(), foreachBlock.getResolveScope());
                                         iteraVarSearch.forEach(iv ->{
                                             PsiReferenceExpression iteraVarInBlock = (PsiReferenceExpression) iv;
-                                            iteraVarInBlock.replace(variableRef);
+                                            final PsiMethodCallExpression getCall =
+                                                    (PsiMethodCallExpression) javaFactory.createExpressionFromText(
+                                                            "arg.get()",
+                                                            null);
+                                            getCall.getMethodExpression().getQualifierExpression().replace(variableRef);
+
+                                            iteraVarInBlock.replace(getCall);
                                         });
                                         final PsiMethodCallExpression isPresentCall =
                                                 (PsiMethodCallExpression) javaFactory.createExpressionFromText(
