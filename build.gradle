@@ -24,10 +24,5 @@ intellij {
     plugins = ["org.intellij.scala:2018.3.4"]
 }
 
-publishPlugin {
-    username intellijPublishUsername
-    password intellijPublishPassword
-}
-
 group 'com.sevendark.ai'
 version '0.1'
