@@ -53,15 +53,20 @@ public class AiCoder extends AnAction {
             PsiClass optional = javaPsiFacade.findClass("java.util.Optional", module.getModuleWithLibrariesScope());
             if (Objects.isNull(optional)) return;
 
-            PsiMethod optionSome = getOptionSome(option);
-            PsiMethod optionNone = getOptionNone(option);
-            PsiMethod fSome = getFSome(f);
-            PsiMethod fNone = getFNone(f);
+            final PsiMethod optionSome = getOptionSome(option);
+            final PsiMethod optionNone = getOptionNone(option);
+            final PsiMethod optionGetOrElse = getOptionGetOrElse(option);
+            final PsiMethod fSome = getFSome(f);
+            final PsiMethod fNone = getFNone(f);
 
             CommandProcessor.getInstance().executeCommand(project, () -> ApplicationManager.getApplication()
                     .runWriteAction(() -> {
                         Set<PsiFile> changedFile = new HashSet<>();
                         Query<PsiReference> search;
+
+                        search = ReferencesSearch.search(optionGetOrElse, module.getModuleScope());
+                        replaceGetOrElse2OrElse(search, changedFile, javaFactory, codeStyleManager);
+
                         search = ReferencesSearch.search(option, module.getModuleScope());
                         search.forEach(e -> {
                             PsiJavaCodeReferenceElement javaCode;
@@ -102,8 +107,10 @@ public class AiCoder extends AnAction {
                                 if(Objects.nonNull(replaced.get())){
                                     codeStyleManager.shortenClassReferences(replaced.get());
                                 }
-                                if(replaced.get().getParent().getParent() instanceof PsiLocalVariable){
-                                    PsiLocalVariable variable = (PsiLocalVariable) replaced.get().getParent().getParent();
+                                if(replaced.get().getParent().getParent() instanceof PsiLocalVariable ||
+                                        replaced.get().getParent().getParent() instanceof PsiParameter){
+
+                                    PsiVariable variable = (PsiVariable) replaced.get().getParent().getParent();
                                     Query<PsiReference> variableSearch = ReferencesSearch.search(variable, variable.getResolveScope());
                                     variableSearch.forEach(m ->{
                                         PsiReferenceExpression variableRef = ((PsiReferenceExpression) m);
@@ -170,6 +177,8 @@ public class AiCoder extends AnAction {
                             }
                         });
 
+
+
                         search = ReferencesSearch.search(optionNone, module.getModuleScope());
                         replaceNone2Empty(search, changedFile, javaFactory, codeStyleManager);
 
@@ -211,6 +220,40 @@ public class AiCoder extends AnAction {
                                     null);
                     ofNullableCall.getArgumentList().replace(originCall.getArgumentList());
                     replaced.set(originCall.replace(ofNullableCall));
+
+                }
+                if(Objects.nonNull(replaced.get())){
+                    codeStyleManager.shortenClassReferences(replaced.get());
+                }
+            }
+        });
+    }
+
+    private void replaceGetOrElse2OrElse(Query<PsiReference> search, Set<PsiFile> changedFile, PsiElementFactory javaFactory
+            , JavaCodeStyleManager codeStyleManager){
+
+        search.forEach(e -> {
+            PsiJavaCodeReferenceElement javaCode;
+            if (e instanceof PsiJavaCodeReferenceElement) {
+                javaCode = (PsiJavaCodeReferenceElement) e;
+            } else {
+                return;
+            }
+            changedFile.add(javaCode.getContainingFile());
+            if (javaCode.getParent() instanceof PsiMethodCallExpression) {
+
+                PsiMethodCallExpression originCall = (PsiMethodCallExpression) javaCode.getParent();
+                AtomicReference<PsiElement> replaced = new AtomicReference<>();
+                if (originCall.getMethodExpression().getLastChild().textMatches("getOrElse")) {
+
+                    final PsiMethodCallExpression orElseCall =
+                            (PsiMethodCallExpression) javaFactory.createExpressionFromText(
+                                    "arg.orElse(arg)",
+                                    null);
+                    orElseCall.getMethodExpression().getQualifierExpression()
+                            .replace(originCall.getMethodExpression().getQualifierExpression());
+                    orElseCall.getArgumentList().replace(originCall.getArgumentList());
+                    replaced.set(originCall.replace(orElseCall));
 
                 }
                 if(Objects.nonNull(replaced.get())){
@@ -270,6 +313,10 @@ public class AiCoder extends AnAction {
 
     private PsiMethod getOptionSome(PsiClass option){
         return option.findMethodsByName("Some", false)[0];
+    }
+
+    private PsiMethod getOptionGetOrElse(PsiClass option){
+        return option.findMethodsByName("getOrElse", false)[0];
     }
 
     private PsiMethod getFSome(PsiClass f) {
