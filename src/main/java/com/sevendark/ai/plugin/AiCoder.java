@@ -177,10 +177,10 @@ public class AiCoder extends AnAction {
                         replaceSome2ofnullable(search, changedFile, javaFactory, codeStyleManager);
 
                         search = ReferencesSearch.search(fSome, module.getModuleScope());
-                        replaceNone2Empty(search, changedFile, javaFactory, codeStyleManager);
+                        replaceSome2ofnullable(search, changedFile, javaFactory, codeStyleManager);
 
                         search = ReferencesSearch.search(fNone, module.getModuleScope());
-                        replaceSome2ofnullable(search, changedFile, javaFactory, codeStyleManager);
+                        replaceNone2Empty(search, changedFile, javaFactory, codeStyleManager);
 
                         changedFile.forEach(codeStyleManager::optimizeImports);
                     }), "Option2Optional", EB);
