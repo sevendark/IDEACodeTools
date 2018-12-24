@@ -113,6 +113,7 @@ public class AiCoder extends AnAction {
                                     PsiVariable variable = (PsiVariable) replaced.get().getParent().getParent();
                                     Query<PsiReference> variableSearch = ReferencesSearch.search(variable, variable.getResolveScope());
                                     variableSearch.forEach(m ->{
+                                        if(!(m instanceof PsiReferenceExpression)) return;
                                         PsiReferenceExpression variableRef = ((PsiReferenceExpression) m);
                                         if(variableRef.getParent().getParent() instanceof PsiMethodCallExpression){
                                             PsiMethodCallExpression variableCall = (PsiMethodCallExpression) variableRef.getParent().getParent();
