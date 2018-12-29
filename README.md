@@ -1,5 +1,5 @@
 # AiCoder
-idea plugin
+Intellij Idea plugin
 
 An Intellij Idea plugin can update play.libs.F.Option to java.util.Optional
 
