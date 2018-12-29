@@ -1,5 +1,5 @@
-# EB-Idea-plugin
-Eventbank idea plugin
+# AiCoder
+idea plugin
 
 An Intellij Idea plugin can update play.libs.F.Option to java.util.Optional
 
