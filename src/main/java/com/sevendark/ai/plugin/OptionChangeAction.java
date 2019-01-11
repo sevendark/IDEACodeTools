@@ -13,6 +13,7 @@ import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.util.Query;
+import com.sevendark.ai.lib.Constant;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiManager;
 import scala.Option;
@@ -28,7 +29,7 @@ import static java.util.Optional.*;
 
 public class OptionChangeAction extends AnAction {
 
-    private static final String Name = "CodeTools";
+    private static final String Name = "Play Option to Java Optional";
 
     public OptionChangeAction() {
         super(Name);
@@ -39,7 +40,7 @@ public class OptionChangeAction extends AnAction {
         final Project project = actionEvent.getProject();
         int ask = Messages.showOkCancelDialog(project,
                 "Are you sure want to replace all Play Option to Java8 Optional? (This may take a few minus)",
-                "Play Option to Java Optional", Messages.getWarningIcon());
+                Name, Messages.getWarningIcon());
         if(Messages.CANCEL == ask){
             return;
         }
@@ -197,7 +198,7 @@ public class OptionChangeAction extends AnAction {
                         replaceNone2Empty(search, changedFile, javaFactory, codeStyleManager);
 
                         changedFile.forEach(codeStyleManager::optimizeImports);
-                    }), "Option2Optional", Name);
+                    }), Name, Constant.GROUP_NAME);
 
         });
 

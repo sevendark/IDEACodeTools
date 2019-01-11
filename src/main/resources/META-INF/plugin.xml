@@ -37,6 +37,10 @@
             <action id="com.sevendark.ai.plugin.OptionChangeAction" class="com.sevendark.ai.plugin.OptionChangeAction"
                     text="Play Option to Java Optional" description="Will change all Play Option ref to Java8 Optional">
             </action>
+            <action id="com.sevendark.ai.plugin.GenerateJooqSqlAction" class="com.sevendark.ai.plugin.GenerateJooqSqlAction"
+                    text="Transform Jooq to Sql" description="Transform Jooq code to Sql script">
+                <keyboard-shortcut keymap="$default" first-keystroke="ctrl EQUALS"/>
+            </action>
         </group>
     </actions>
 </idea-plugin>
