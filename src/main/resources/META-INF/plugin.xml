@@ -15,10 +15,10 @@
     <change-notes><![CDATA[
     <ul>
         <li>version 0.2.3<br/>
-            Add feature: copy jooq code to sql script
+            Add feature: Transform jooq code to sql script
         </li>
         <li>version 0.2.2<br/>
-            Add feature: update play.F.Option to java.util.Optional
+            Add feature: Update play.F.Option to java.util.Optional
         </li>
     </ul>
     ]]></change-notes>
