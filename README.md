@@ -2,8 +2,6 @@
 
 This is an Intellij Idea plugin
 
-you can download old version from [plugin page](https://plugins.jetbrains.com/plugin/11467-aicoder) 
-
 Features:
  1. automic update play.libs.F.Option to java.util.Optional
  
