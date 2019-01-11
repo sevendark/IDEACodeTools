@@ -32,9 +32,11 @@
     <depends optional="true">org.intellij.scala</depends>
 
     <actions>
-        <action id="com.sevendark.ai.plugin.OptionChangeAction" class="com.sevendark.ai.plugin.OptionChangeAction"
-                text="Play Option 2 Java Optional" description="Will change all Play Option ref to Java8 Optional">
+        <group id="com.sevendark.ai.plugin.GroupedActions" text="CodeTools" popup="true">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
-        </action>
+            <action id="com.sevendark.ai.plugin.OptionChangeAction" class="com.sevendark.ai.plugin.OptionChangeAction"
+                    text="Play Option to Java Optional" description="Will change all Play Option ref to Java8 Optional">
+            </action>
+        </group>
     </actions>
 </idea-plugin>
