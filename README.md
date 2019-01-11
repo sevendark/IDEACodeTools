@@ -1,6 +1,13 @@
-# AiCoder
-Intellij Idea plugin
+# IDEACodeTools
 
-An Intellij Idea plugin can update play.libs.F.Option to java.util.Optional
+This is an Intellij Idea plugin
 
-when you install this plugin, you can see a menu on the top of window is Eventbank -> option2optional
+you can download old version from [plugin page](https://plugins.jetbrains.com/plugin/11467-aicoder) 
+
+Features:
+ 1. automic update play.libs.F.Option to java.util.Optional
+ 
+Way of use:
+ 1. Settings -> Plugins -> Marketplace search 'CodeTools' and install
+ 2. open [plugin page](https://plugins.jetbrains.com/plugin/11467-aicoder)  to download and install from disk
+ 3. on top menu, you can see 'Code Tools'
