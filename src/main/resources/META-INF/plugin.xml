@@ -1,18 +1,24 @@
 <idea-plugin>
-    <id>com.sevendark.ai.plugin.AiCoder</id>
-    <name>AiCoder</name>
-    <version>0.0.1</version>
+    <id>CodeTools</id>
+    <name>CodeTools</name>
+    <version>0.2.3</version>
     <vendor email="sevendark@live.com" url="https://github.com/sevendark">Personal</vendor>
 
     <description><![CDATA[
-    used to update play2.3 -> play2.5
-    <p>for update play.F.Option to java.util.Optional</p>
+    Some useful tools:
+    1. When update playframework2.3 , you need to change play.F.Option to java.util.Optional,<br/>
+        this tools can help replace them.
+    2. When you need to copy jooq code to run on Navicat, or Workbench, <br/>
+        this tools can help generate it.
     ]]></description>
 
     <change-notes><![CDATA[
     <ul>
-        <li>version 1.0<br/>
-        first build for change play.F.Option to java.util.Optional
+        <li>version 0.2.3<br/>
+            Add feature: copy jooq code to sql script
+        </li>
+        <li>version 0.2.2<br/>
+            Add feature: update play.F.Option to java.util.Optional
         </li>
     </ul>
     ]]></change-notes>
@@ -26,9 +32,9 @@
     <depends optional="true">org.intellij.scala</depends>
 
     <actions>
-        <group id="Eventbank" text="Eventbank" description="Eventbank Tools">
-            <add-to-group group-id="MainMenu" anchor="last" />
-            <action id="AiCoder" class="com.sevendark.ai.plugin.AiCoder" text="Option2Optional" description="update play F.Option to java.util.Optional" />
-        </group>
+        <action id="com.sevendark.ai.plugin.OptionChangeAction" class="com.sevendark.ai.plugin.OptionChangeAction"
+                text="Play Option 2 Java Optional" description="Will change all Play Option ref to Java8 Optional">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
     </actions>
 </idea-plugin>

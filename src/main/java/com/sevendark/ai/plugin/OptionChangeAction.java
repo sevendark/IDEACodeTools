@@ -26,17 +26,23 @@ import java.util.stream.Stream;
 
 import static java.util.Optional.*;
 
-public class AiCoder extends AnAction {
+public class OptionChangeAction extends AnAction {
 
-    private static final String EB = "Eventbank";
+    private static final String Name = "CodeTools";
 
-    public AiCoder() {
-        super(EB);
+    public OptionChangeAction() {
+        super(Name);
     }
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent actionEvent) {
         final Project project = actionEvent.getProject();
+        int ask = Messages.showOkCancelDialog(project,
+                "Are you sure want to replace all Play Option to Java8 Optional? (This may take a few minus)",
+                "Play Option 2 Java Optional", Messages.getWarningIcon());
+        if(Messages.CANCEL == ask){
+            return;
+        }
         if(Objects.isNull(project)) return;
         final ModuleManager moduleManager = ModuleManager.getInstance(project);
         final JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(project);
@@ -178,8 +184,6 @@ public class AiCoder extends AnAction {
                             }
                         });
 
-
-
                         search = ReferencesSearch.search(optionNone, module.getModuleScope());
                         replaceNone2Empty(search, changedFile, javaFactory, codeStyleManager);
 
@@ -193,7 +197,7 @@ public class AiCoder extends AnAction {
                         replaceNone2Empty(search, changedFile, javaFactory, codeStyleManager);
 
                         changedFile.forEach(codeStyleManager::optimizeImports);
-                    }), "Option2Optional", EB);
+                    }), "Option2Optional", Name);
 
         });
 
@@ -338,7 +342,4 @@ public class AiCoder extends AnAction {
         }
     }
 
-    private void showErrorMsg(Object msg) {
-        Messages.showErrorDialog(Objects.toString(msg), EB);
-    }
 }
