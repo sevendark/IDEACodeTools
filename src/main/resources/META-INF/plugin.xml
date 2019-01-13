@@ -5,11 +5,14 @@
     <vendor email="sevendark@live.com" url="https://github.com/sevendark">Personal</vendor>
 
     <description><![CDATA[
-    Some useful tools:
+    <h3>Features:</h3>
     1. When update playframework2.3 , you need to change play.F.Option to java.util.Optional,<br/>
-        this tools can help replace them.
+       this tools can help replace them.<br/>
     2. When you need to copy jooq code to run on Navicat, or Workbench, <br/>
-        this tools can help generate it.
+       this tools can help generate sql script.<br/>
+
+    <h3>Way of use</h3>
+    On top menus , Open Tools -> CodeTools, then you can see all tools<br/>
     ]]></description>
 
     <change-notes><![CDATA[
@@ -39,7 +42,7 @@
             </action>
             <action id="com.sevendark.ai.plugin.GenerateJooqSqlAction" class="com.sevendark.ai.plugin.GenerateJooqSqlAction"
                     text="Transform Jooq to Sql" description="Transform Jooq code to Sql script">
-                <keyboard-shortcut keymap="$default" first-keystroke="ctrl EQUALS"/>
+                <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt g"/>
             </action>
         </group>
     </actions>
