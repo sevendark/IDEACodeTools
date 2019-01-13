@@ -7,6 +7,6 @@ This is an Intellij Idea plugin
  2. Transform Jooq code to Sql script
  
 ## Way of use:
- 1. Settings -> Plugins -> Marketplace search 'CodeTools' and install
- 2. Open [plugin page](https://plugins.jetbrains.com/plugin/11467-aicoder)  to download and install from disk
- 3. Open Tools -> CodeTools, then you can see all tools
+ 1. Settings -> Plugins -> Marketplace search 'CodeTools' to install
+    Or Open [plugin page](https://plugins.jetbrains.com/plugin/11467-aicoder) to download and install from disk
+ 2. Open Tools -> CodeTools, then you can see all tools
