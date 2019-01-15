@@ -124,6 +124,9 @@ public class GenerateJooqSqlAction extends AnAction {
         if(StringUtils.isBlank(str)){
             return "";
         }
+        if(str.matches(STR)){
+            return str;
+        }
         return str.replaceAll(VAR, "---");
     }
 
