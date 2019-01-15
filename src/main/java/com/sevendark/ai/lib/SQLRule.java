@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 public class SQLRule {
     public boolean needParen = false;
     public boolean needQualifier = false;
+    public boolean needNewLine = false;
     public String placeholder = null;
     public String sqlName = null;
     public String pattern = null;
@@ -17,6 +18,11 @@ public class SQLRule {
 
     public SQLRule needQualifier(boolean needQualifier){
         this.needQualifier = needQualifier;
+        return this;
+    }
+
+    public SQLRule needNewLine(boolean needNewLine){
+        this.needNewLine = needNewLine;
         return this;
     }
 

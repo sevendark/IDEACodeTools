@@ -7,19 +7,21 @@ import static com.sevendark.ai.lib.Constant.AFTER_REG;
 import static com.sevendark.ai.lib.Constant.PRE_REG;
 
 public enum SQLUtil {
+    /**
+     * mysql
+     */
     MYSQL(new LinkedHashMap<String, SQLRule>(){
         {
-            put("select", SQLRule.build().placehoder("*").pattern("select" + AFTER_REG));
-            put("from", SQLRule.build().pattern("from" + AFTER_REG));
+            put("select", SQLRule.build().needNewLine(true).placehoder("*").pattern("select" + AFTER_REG));
+            put("as", SQLRule.build().needQualifier(true).pattern(PRE_REG + "as" + AFTER_REG));
+            put("from", SQLRule.build().needNewLine(true).pattern("from" + AFTER_REG));
             put("join", SQLRule.build().pattern("join" + AFTER_REG));
             put("leftJoin", SQLRule.build().sqlName("left join").pattern("leftJoin" + AFTER_REG));
             put("leftOuterJoin", SQLRule.build().sqlName("left outer join").pattern("leftOuterJoin" + AFTER_REG));
-            put("leftInnerJoin", SQLRule.build().sqlName("left inner join").pattern("leftInnerJoin" + AFTER_REG));
             put("rightJoin", SQLRule.build().sqlName("right join").pattern("rightJoin" + AFTER_REG));
             put("rightOuterJoin", SQLRule.build().sqlName("right outer join").pattern("rightOuterJoin" + AFTER_REG));
-            put("rightInnerJoin", SQLRule.build().sqlName("right inner join").pattern("rightInnerJoin" + AFTER_REG));
             put("on", SQLRule.build().needParen(true).pattern("on" + AFTER_REG));
-            put("where", SQLRule.build().needParen(true).pattern("where" + AFTER_REG));
+            put("where", SQLRule.build().needNewLine(true).needParen(true).pattern("where" + AFTER_REG));
             put("orderBy", SQLRule.build().sqlName("order by").pattern("orderBy" + AFTER_REG));
             put("groupBy", SQLRule.build().sqlName("group by").pattern("groupBy" + AFTER_REG));
             put("eq", SQLRule.build().needParen(true).sqlName(" = ").needQualifier(true).pattern(PRE_REG + "eq" + AFTER_REG));
