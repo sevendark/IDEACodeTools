@@ -8,13 +8,13 @@ public interface Constant {
    String GROUP_NAME = "com.sevendark.ai.plugin.GroupedActions";
    String AFTER_REG = "\\(";
    String PRE_REG = "([a-zA-Z0-9_]+\\.[a-zA-Z0-9_]+)+\\.";
-   String METHOD = "(([a-zA-Z0-9_]+\\.[a-zA-Z0-9_]+)\\.)?[a-zA-Z_]+\\(";
+   String METHOD = "(([a-zA-Z0-9_]+\\.[a-zA-Z0-9_]+)\\.)?[a-zA-Z_]+\\(?";
    List<String> supportLanuage = new ArrayList<String>(){{
       add("JAVA");
-      add("SCALA");
+      add("Scala");
    }};
 
    static void test(){
-     Pattern.compile(METHOD);
+     Pattern.compile(METHOD + AFTER_REG + PRE_REG);
    }
 }
