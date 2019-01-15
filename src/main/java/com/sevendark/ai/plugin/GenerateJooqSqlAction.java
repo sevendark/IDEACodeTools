@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.sevendark.ai.lib.Constant.METHOD;
+import static com.sevendark.ai.lib.Constant.*;
 
 public class GenerateJooqSqlAction extends AnAction {
     private static final String Name = "Generate Jooq Sql";
@@ -88,9 +88,12 @@ public class GenerateJooqSqlAction extends AnAction {
         if(rule.needQualifier){
             if(StringUtils.isNotBlank(sqlBean.qualifierSir)){
                 if(!appendSQL(new StringBuilder(sqlBean.qualifierSir), elementFactory)){
-                    sql.append(sqlBean.qualifierSir);
+                    sql.append(replaceVar(sqlBean.qualifierSir));
                 }
             }
+        }
+        if(rule.needNewLine){
+            sql.append("\n");
         }
         sql.append(" ");
         sql.append(rule.getFinalSQLName(sqlBean.refName));
@@ -104,7 +107,7 @@ public class GenerateJooqSqlAction extends AnAction {
         if(StringUtils.isBlank(sqlBean.bodyStr)){
             sql.append(rule.placeholder);
         }else if (!appendSQL(new StringBuilder(sqlBean.bodyStr), elementFactory)){
-            sql.append(sqlBean.bodyStr);
+            sql.append(replaceVar(sqlBean.bodyStr));
         }
         if(rule.needParen) {
             sql.append(")");
@@ -117,6 +120,13 @@ public class GenerateJooqSqlAction extends AnAction {
         return true;
     }
 
+    private String replaceVar(String str){
+        if(StringUtils.isBlank(str)){
+            return "";
+        }
+        return str.replaceAll(VAR, "---");
+    }
+
     private SQL getSQL(final PsiElementFactory elementFactory, final String code){
         SQL sql = new SQL();
         String refName = null;
@@ -124,7 +134,15 @@ public class GenerateJooqSqlAction extends AnAction {
         String qualifierSir = null;
         if(Objects.isNull(elementFactory) && Objects.equals("Scala", language.getID())){
             final PsiElement elementFromText = ScalaPsiElementFactory.createElementFromText(code, project);
-            if(!(elementFromText instanceof ScMethodCall)) return null;
+            if(!(elementFromText instanceof ScMethodCall)) {
+                if(dialect.replaceMap.containsKey(elementFromText.getLastChild().getText())){
+                    sql.refName = elementFromText.getLastChild().getText();
+                    sql.qualifierSir = elementFromText.getFirstChild().getText();
+                    sql.bodyStr = "";
+                    return sql;
+                }
+                return null;
+            }
             ScMethodCall methodCall = (ScMethodCall)elementFromText;
             refName = methodCall.getInvokedExpr().getLastChild().getText();
             bodyStr = Stream.of(methodCall.args().exprsArray()).map(PsiElement::getText).collect(Collectors.joining(", "));
@@ -138,7 +156,9 @@ public class GenerateJooqSqlAction extends AnAction {
         }else if (Objects.nonNull(elementFactory)){
             final PsiStatement statementFromText = elementFactory.createStatementFromText(code, null);
             PsiElement element = statementFromText.getFirstChild();
-            if (!(element instanceof PsiMethodCallExpression)) return null;
+            if (!(element instanceof PsiMethodCallExpression)) {
+                return null;
+            }
             refName = ((PsiMethodCallExpression) element).getMethodExpression().getReferenceName();
             Stream<PsiExpression> body = Stream.of(((PsiMethodCallExpression) element).getArgumentList().getExpressions());
             bodyStr = body.map(PsiElement::getText).collect(Collectors.joining(", "));

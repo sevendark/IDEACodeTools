@@ -11,6 +11,7 @@ public enum SQLUtil {
         {
             put("select", SQLRule.build().needNewLine(true).placehoder("*"));
             put("selectDistinct", SQLRule.build().needNewLine(true).sqlName("select distinct"));
+            put("selectCount", SQLRule.build().needNewLine(true).sqlName("select \n\tcount(1)"));
             put("as", SQLRule.build().needQualifier(true));
 
             put("from", SQLRule.build().needNewLine(true));
@@ -27,14 +28,17 @@ public enum SQLUtil {
             put("groupBy", SQLRule.build().needNewLine(true).sqlName("group by"));
 
             put("eq", SQLRule.build().needParen(true).needQualifier(true).sqlName("="));
+            put("ne", SQLRule.build().needParen(true).needQualifier(true).sqlName("<>"));
             put("in", SQLRule.build().needParen(true).needQualifier(true).sqlName("in"));
+            put("notIn", SQLRule.build().needParen(true).needQualifier(true).sqlName("not in"));
             put("ge", SQLRule.build().needParen(true).needQualifier(true).sqlName(">"));
+            put("gt", SQLRule.build().needParen(true).needQualifier(true).sqlName(">="));
             put("le", SQLRule.build().needParen(true).needQualifier(true).sqlName("<"));
+            put("lt", SQLRule.build().needParen(true).needQualifier(true).sqlName("<="));
             put("isTrue", SQLRule.build().needQualifier(true).sqlName("= True"));
             put("isFalse", SQLRule.build().needQualifier(true).sqlName("= False"));
             put("isNull", SQLRule.build().needQualifier(true).sqlName("is null"));
             put("isNotNull", SQLRule.build().needQualifier(true).sqlName("is not null"));
-            put("notIn", SQLRule.build().needParen(true).needQualifier(true).sqlName("not in"));
             put("like", SQLRule.build().needQualifier(true));
 
             put("and", SQLRule.build().needParen(true));

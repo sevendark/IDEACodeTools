@@ -6,7 +6,7 @@ public class SQLRule {
     public boolean needParen = false;
     public boolean needQualifier = false;
     public boolean needNewLine = false;
-    public String placeholder = null;
+    public String placeholder = "";
     public String sqlName = null;
 
 

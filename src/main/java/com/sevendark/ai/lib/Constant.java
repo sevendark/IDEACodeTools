@@ -6,8 +6,7 @@ import java.util.regex.Pattern;
 
 public interface Constant {
    String GROUP_NAME = "com.sevendark.ai.plugin.GroupedActions";
-   String AFTER_REG = "\\(";
-   String PRE_REG = "([a-zA-Z0-9_]+\\.[a-zA-Z0-9_]+)+\\.";
+   String VAR = "(\\w*[a-z]+\\w*\\.?)+";
    String METHOD = "(([a-zA-Z0-9_]+\\.[a-zA-Z0-9_]+)\\.)?[a-zA-Z_]+\\(?";
    List<String> supportLanuage = new ArrayList<String>(){{
       add("JAVA");
@@ -15,6 +14,6 @@ public interface Constant {
    }};
 
    static void test(){
-     Pattern.compile(METHOD + AFTER_REG + PRE_REG);
+     Pattern.compile(METHOD + VAR + VAR);
    }
 }
