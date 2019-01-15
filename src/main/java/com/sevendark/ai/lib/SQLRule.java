@@ -8,7 +8,6 @@ public class SQLRule {
     public boolean needNewLine = false;
     public String placeholder = null;
     public String sqlName = null;
-    public String pattern = null;
 
 
     public SQLRule needParen(boolean needParen){
@@ -33,11 +32,6 @@ public class SQLRule {
 
     public SQLRule sqlName(String sqlName){
         this.sqlName = sqlName;
-        return this;
-    }
-
-    public SQLRule pattern(String pattern){
-        this.pattern = pattern;
         return this;
     }
 
