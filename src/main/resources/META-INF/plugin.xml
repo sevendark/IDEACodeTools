@@ -1,5 +1,5 @@
 <idea-plugin>
-    <id>CodeTools</id>
+    <id>com.sevendark.ai.plugin.AiCoder</id>
     <name>CodeTools</name>
     <version>0.2.3</version>
     <vendor email="sevendark@live.com" url="https://github.com/sevendark">Personal</vendor>
