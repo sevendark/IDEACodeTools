@@ -16,4 +16,4 @@ Intellij Idea plugin
 1. select jooq code
     ![screenshots](use.jpg)
 2. press `ctrl+alt+g`
-3. paste it anywhere
+3. paste SQL anywhere

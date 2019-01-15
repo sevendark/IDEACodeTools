@@ -11,8 +11,14 @@
     2. When you need to copy jooq code to run on Navicat, or Workbench, <br/>
        this tools can help generate sql script.<br/>
 
-    <h3>Way of use</h3>
+    <h3>Where can find menu:</h3>
     On top menus , Open Tools -> CodeTools, then you can see all tools<br/>
+
+    <h3>How to use Transform Jooq code</h3>
+    1. select a piece jooq code<br/>
+        eg: select().from(TBLUSER).where(TBLUSER.ID.eq(1))
+    2. press `ctrl+alt+g`<br/>
+    3. paste SQL anywhere<br/>
     ]]></description>
 
     <change-notes><![CDATA[
