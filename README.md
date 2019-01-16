@@ -9,11 +9,11 @@ Intellij Idea plugin
 2. Transform Jooq code to Sql script
  
 ## Install:
-1. `Settings -> Plugins -> Marketplace` search `CodeTools` to install
+1. <kbd>Settings</kbd> -> <kbd>Plugins</kbd> -> <kbd>Marketplace</kbd> search `CodeTools` to install
 2. Open [plugin page](https://plugins.jetbrains.com/plugin/11467-aicoder) to download and install from disk
 
 ## How to use Transform Jooq code:
 1. select jooq code
     ![screenshots](use.jpg)
-2. press `ctrl+alt+g`
+2. press <kbd>ctrl</kbd>+<kbd>alt</kbd>+<kbd>g</kbd>
 3. paste SQL anywhere
