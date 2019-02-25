@@ -39,6 +39,7 @@ public class GenerateJooqSqlAction extends AnAction {
     private Caret caret;
     private SQLUtil dialect = SQLUtil.MYSQL;
     private StringBuilder sql;
+    private SQLRule last = null;
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
@@ -46,35 +47,26 @@ public class GenerateJooqSqlAction extends AnAction {
 
         if(!validAndSet(event)) return;
 
-        final StringBuilder selectedText = new StringBuilder(caret.getSelectedText().chars()
+        final StringBuilder selectedText = new StringBuilder(Objects.requireNonNull(caret.getSelectedText())
+                .chars()
                 .boxed().map(e -> Character.toString((char)e.intValue()))
                 .filter(e ->  e.matches("[^\\s]+"))
                 .collect(Collectors.joining())
         );
 
-        PsiElementFactory elementFactory = null;
-        if (Objects.equals("JAVA", language.getID())) {
-            final JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(project);
-            elementFactory = javaPsiFacade.getElementFactory();
-        }
         try{
-            appendSQL(selectedText, elementFactory);
+            appendSQL(selectedText);
             if(sql.length() != 0){
                 copyPasteManager.setContents(new StringSelection(sql.toString()));
             }
         }catch (Exception e){
             e.printStackTrace();
-            Messages.showErrorDialog("Some error of generate SQL, \n" +
-                    e.getLocalizedMessage() + "\n" +
-                    " Please help to fix it https://github.com/sevendark/IDEACodeTools/issues", Name);
+            Messages.showErrorDialog(e.getLocalizedMessage(), Name);
         }
     }
 
-    private boolean appendSQL(final StringBuilder selectedText, final PsiElementFactory elementFactory) {
-        String code = getNext(selectedText);
-        if(StringUtils.isBlank(code)) return false;
-
-        SQL sqlBean = getSQL(elementFactory, code);
+    private boolean appendSQL(final StringBuilder selectedText) {
+        SQL sqlBean = getNext(selectedText);
 
         if(Objects.isNull(sqlBean) || StringUtils.isBlank(sqlBean.refName)){
             return false;
@@ -85,38 +77,39 @@ public class GenerateJooqSqlAction extends AnAction {
         }
 
         SQLRule rule = dialect.replaceMap.get(sqlBean.refName);
+
+        if(Objects.nonNull(last) && last.start){
+            sql.append(rule.beStart);
+        }
+
         if(rule.needQualifier){
             if(StringUtils.isNotBlank(sqlBean.qualifierSir)){
-                if(!appendSQL(new StringBuilder(sqlBean.qualifierSir), elementFactory)){
+                if(!appendSQL(new StringBuilder(sqlBean.qualifierSir))){
                     sql.append(replaceVar(sqlBean.qualifierSir));
                 }
             }
         }
-        if(rule.needNewLine){
-            sql.append("\n");
-        }
         sql.append(" ");
         sql.append(rule.getFinalSQLName(sqlBean.refName));
         sql.append(" ");
-        if(rule.needNewLine){
-            sql.append("\n");
+
+        if(StringUtils.isNotBlank(sqlBean.bodyStr) || StringUtils.isNotBlank(rule.placeholder)){
+            if(rule.needParen) {
+                sql.append("(");
+            }
+            if(StringUtils.isBlank(sqlBean.bodyStr)){
+                sql.append(rule.placeholder);
+            }else if (!appendSQL(new StringBuilder(sqlBean.bodyStr))){
+                sql.append(replaceVar(sqlBean.bodyStr));
+            }
+            if(rule.needParen) {
+                sql.append(")");
+            }
+            sql.append(" ");
         }
-        if(rule.needParen) {
-            sql.append("(");
-        }
-        if(StringUtils.isBlank(sqlBean.bodyStr)){
-            sql.append(rule.placeholder);
-        }else if (!appendSQL(new StringBuilder(sqlBean.bodyStr), elementFactory)){
-            sql.append(replaceVar(sqlBean.bodyStr));
-        }
-        if(rule.needParen) {
-            sql.append(")");
-        }
-        if(rule.needNewLine){
-            sql.append("\n");
-        }
-        sql.append(" ");
-        appendSQL(selectedText, elementFactory);
+
+        last = rule;
+        appendSQL(selectedText);
         return true;
     }
 
@@ -130,53 +123,32 @@ public class GenerateJooqSqlAction extends AnAction {
         return str.replaceAll(VAR, "---");
     }
 
-    private SQL getSQL(final PsiElementFactory elementFactory, final String code){
+    private SQL getSQL(StringBuilder fullMethod){
         SQL sql = new SQL();
-        String refName = null;
-        String bodyStr = null;
-        String qualifierSir = null;
-        if(Objects.isNull(elementFactory) && Objects.equals("Scala", language.getID())){
-            final PsiElement elementFromText = ScalaPsiElementFactory.createElementFromText(code, project);
-            if(!(elementFromText instanceof ScMethodCall)) {
-                if(dialect.replaceMap.containsKey(elementFromText.getLastChild().getText())){
-                    sql.refName = elementFromText.getLastChild().getText();
-                    sql.qualifierSir = elementFromText.getFirstChild().getText();
-                    sql.bodyStr = "";
-                    return sql;
-                }
-                return null;
-            }
-            ScMethodCall methodCall = (ScMethodCall)elementFromText;
-            refName = methodCall.getInvokedExpr().getLastChild().getText();
-            bodyStr = Stream.of(methodCall.args().exprsArray()).map(PsiElement::getText).collect(Collectors.joining(", "));
-            final PsiElement firstChild = methodCall.getInvokedExpr().getFirstChild();
-            if(Objects.nonNull(firstChild) &&
-                    StringUtils.isNotBlank(firstChild.getText()) &&
-                    !Objects.equals(refName, firstChild.getText())){
-                qualifierSir = firstChild.getText();
-            }
-            System.out.println(elementFromText);
-        }else if (Objects.nonNull(elementFactory)){
-            final PsiStatement statementFromText = elementFactory.createStatementFromText(code, null);
-            PsiElement element = statementFromText.getFirstChild();
-            if (!(element instanceof PsiMethodCallExpression)) {
-                return null;
-            }
-            refName = ((PsiMethodCallExpression) element).getMethodExpression().getReferenceName();
-            Stream<PsiExpression> body = Stream.of(((PsiMethodCallExpression) element).getArgumentList().getExpressions());
-            bodyStr = body.map(PsiElement::getText).collect(Collectors.joining(", "));
-            PsiElement qualifier = ((PsiMethodCallExpression) element).getMethodExpression().getQualifier();
-            if(Objects.nonNull(qualifier)) {
-                qualifierSir = qualifier.getText();
-            }
+
+        if(Objects.equals(fullMethod.charAt(0), '.')){
+            fullMethod.deleteCharAt(0);
         }
-        sql.refName = refName;
-        sql.bodyStr = bodyStr;
-        sql.qualifierSir = qualifierSir;
+
+        final int lastIndexOfLP = fullMethod.indexOf("(");
+        if(lastIndexOfLP != -1){
+            sql.bodyStr = fullMethod.substring(fullMethod.indexOf("(") + 1, fullMethod.length() - 1);
+            fullMethod.delete(fullMethod.indexOf("("), fullMethod.length());
+        }
+
+        sql.refName = fullMethod.substring(fullMethod.lastIndexOf(".") +  1, fullMethod.length());
+        final int lastIndexOfPoint = fullMethod.lastIndexOf(".");
+        if(lastIndexOfPoint == -1){
+            fullMethod.delete(0, fullMethod.length());
+        }else{
+            fullMethod.delete(fullMethod.lastIndexOf("."), fullMethod.length());
+        }
+
+        sql.qualifierSir = fullMethod.toString();
         return sql;
     }
 
-    private String getNext(final StringBuilder code) {
+    private SQL getNext(final StringBuilder code) {
         Pattern pattern = Pattern.compile(METHOD);
         Matcher matcher = pattern.matcher(code);
         if (matcher.find()) {
@@ -186,7 +158,7 @@ public class GenerateJooqSqlAction extends AnAction {
             }
             String group = code.substring(matcher.start(), end);
             code.delete(0, end);
-            return group;
+            return getSQL(new StringBuilder(group));
         }
         return null;
     }
