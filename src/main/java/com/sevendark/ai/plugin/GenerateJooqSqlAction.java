@@ -120,7 +120,7 @@ public class GenerateJooqSqlAction extends AnAction {
         if(str.matches(STR)){
             return str;
         }
-        return "'"+str+"'";
+        return str.replaceAll(VAR, "---");
     }
 
     private SQL getSQL(StringBuilder fullMethod){
