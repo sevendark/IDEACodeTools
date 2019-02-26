@@ -91,18 +91,15 @@ public class GenerateJooqSqlAction extends AnAction {
         sql.append(" ");
 
         if(StringUtils.isNotBlank(sqlBean.bodyStr) || StringUtils.isNotBlank(rule.placeholder)){
-            boolean key = true;
             if(rule.needParen) {
                 sql.append("(");
             }
             if(StringUtils.isBlank(sqlBean.bodyStr)){
                 sql.append(rule.placeholder);
             }else if (!appendSQL(new StringBuilder(sqlBean.bodyStr))){
-                sql.deleteCharAt(sql.length() - 1);
-                key = false;
                 sql.append(replaceVar(sqlBean.bodyStr));
             }
-            if(rule.needParen && key) {
+            if(rule.needParen) {
                 sql.append(")");
             }
             sql.append(" ");
