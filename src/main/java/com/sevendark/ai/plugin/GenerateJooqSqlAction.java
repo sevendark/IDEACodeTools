@@ -8,22 +8,19 @@ import com.intellij.openapi.editor.Caret;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.psi.*;
 import com.sevendark.ai.lib.Constant;
 import com.sevendark.ai.lib.SQL;
 import com.sevendark.ai.lib.SQLRule;
 import com.sevendark.ai.lib.SQLUtil;
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.engine.jdbc.internal.BasicFormatterImpl;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall;
-import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiElementFactory;
 
 import java.awt.datatransfer.StringSelection;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.sevendark.ai.lib.Constant.*;
 
@@ -57,7 +54,7 @@ public class GenerateJooqSqlAction extends AnAction {
         try{
             appendSQL(selectedText);
             if(sql.length() != 0){
-                copyPasteManager.setContents(new StringSelection(sql.toString()));
+                copyPasteManager.setContents(new StringSelection(new BasicFormatterImpl().format(sql.toString())));
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -94,15 +91,18 @@ public class GenerateJooqSqlAction extends AnAction {
         sql.append(" ");
 
         if(StringUtils.isNotBlank(sqlBean.bodyStr) || StringUtils.isNotBlank(rule.placeholder)){
+            boolean key = true;
             if(rule.needParen) {
                 sql.append("(");
             }
             if(StringUtils.isBlank(sqlBean.bodyStr)){
                 sql.append(rule.placeholder);
             }else if (!appendSQL(new StringBuilder(sqlBean.bodyStr))){
+                sql.deleteCharAt(sql.length() - 1);
+                key = false;
                 sql.append(replaceVar(sqlBean.bodyStr));
             }
-            if(rule.needParen) {
+            if(rule.needParen && key) {
                 sql.append(")");
             }
             sql.append(" ");
@@ -120,7 +120,7 @@ public class GenerateJooqSqlAction extends AnAction {
         if(str.matches(STR)){
             return str;
         }
-        return str.replaceAll(VAR, "---");
+        return "'"+str+"'";
     }
 
     private SQL getSQL(StringBuilder fullMethod){
