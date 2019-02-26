@@ -29,6 +29,7 @@ public enum SQLUtil {
             put("groupBy", SQLRule.build().sqlName("group by"));
 
             put("eq", SQLRule.build().needParen(true).needQualifier(true).sqlName("="));
+            put("equal", SQLRule.build().needParen(true).needQualifier(true).sqlName("="));
             put("ne", SQLRule.build().needParen(true).needQualifier(true).sqlName("<>"));
             put("in", SQLRule.build().needParen(true).needQualifier(true).sqlName("in"));
             put("notIn", SQLRule.build().needParen(true).needQualifier(true).sqlName("not in"));
