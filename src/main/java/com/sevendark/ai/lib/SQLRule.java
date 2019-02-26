@@ -5,37 +5,43 @@ import org.apache.commons.lang.StringUtils;
 public class SQLRule {
     public boolean needParen = false;
     public boolean needQualifier = false;
-    public boolean needNewLine = false;
+    public String beStart = "";
+    public boolean start = false;
     public String placeholder = "";
     public String sqlName = null;
 
 
-    public SQLRule needParen(boolean needParen){
+    SQLRule needParen(boolean needParen){
         this.needParen = needParen;
         return this;
     }
 
-    public SQLRule needQualifier(boolean needQualifier){
+    SQLRule needQualifier(boolean needQualifier){
         this.needQualifier = needQualifier;
         return this;
     }
 
-    public SQLRule needNewLine(boolean needNewLine){
-        this.needNewLine = needNewLine;
+    SQLRule start(boolean start){
+        this.start = start;
         return this;
     }
 
-    public SQLRule placehoder(String placeholder){
+    SQLRule beStart(String beStart){
+        this.beStart = beStart;
+        return this;
+    }
+
+    SQLRule placehoder(String placeholder){
         this.placeholder = placeholder;
         return this;
     }
 
-    public SQLRule sqlName(String sqlName){
+    SQLRule sqlName(String sqlName){
         this.sqlName = sqlName;
         return this;
     }
 
-    public static SQLRule build(){
+    static SQLRule build(){
         return new SQLRule();
     }
 

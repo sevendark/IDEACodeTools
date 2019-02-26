@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.sevendark.ai.plugin.AiCoder</id>
     <name>CodeTools</name>
-    <version>0.2.3</version>
+    <version>0.2.4</version>
     <vendor email="sevendark@live.com" url="https://github.com/sevendark">Personal</vendor>
 
     <description><![CDATA[
@@ -16,13 +16,18 @@
 
     <h3>How to use Transform Jooq code</h3>
     1. select a piece jooq code<br/>
-        eg: select().from(TBLUSER).where(TBLUSER.ID.eq(1))
+        eg: select().from(TBLUSER).where(TBLUSER.ID.eq(1))<br/>
     2. press `ctrl+alt+g`<br/>
     3. paste SQL anywhere<br/>
     ]]></description>
 
     <change-notes><![CDATA[
     <ul>
+        <li>version 0.2.4<br/>
+            1. support where() <br/>
+            2. support selectOne <br/>
+            3. more fast<br/>
+        </li>
         <li>version 0.2.3<br/>
             Add feature: Transform jooq code to sql script
         </li>
