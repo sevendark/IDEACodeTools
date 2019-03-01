@@ -1,4 +1,6 @@
-package com.sevendark.sql.lib;
+package com.sevendark.ai.plugin.lib.sql;
+
+import com.sevendark.ai.plugin.lib.Constant;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,16 +8,16 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.sevendark.sql.lib.Constant.METHOD;
-
 public class SQLReader {
 
     public static List<SQLStatement> readSQL(StringBuilder selectedText){
         List<SQLStatement> root = new ArrayList<>();
 
+        int i = 0;
         for(SQLStatement statement = getNext(selectedText);
             Objects.nonNull(statement);
             statement = getNext(selectedText)){
+            statement.i = i++;
             statement.body = readSQL(statement.bodyStr);
             root.add(statement);
         }
@@ -49,7 +51,7 @@ public class SQLReader {
     }
 
     private static SQLStatement getNext(final StringBuilder code) {
-        Pattern pattern = Pattern.compile(METHOD);
+        Pattern pattern = Pattern.compile(Constant.METHOD);
         Matcher matcher = pattern.matcher(code);
         if (matcher.find()) {
             int end = matcher.end();

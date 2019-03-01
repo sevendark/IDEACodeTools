@@ -1,4 +1,4 @@
-package com.sevendark.sql.plugin;
+package com.sevendark.ai.plugin;
 
 import com.intellij.lang.Language;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -8,7 +8,11 @@ import com.intellij.openapi.editor.Caret;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.sevendark.sql.lib.*;
+import com.sevendark.ai.plugin.lib.Constant;
+import com.sevendark.ai.plugin.lib.sql.SQLMapper;
+import com.sevendark.ai.plugin.lib.sql.SQLMapperBean;
+import com.sevendark.ai.plugin.lib.sql.SQLReader;
+import com.sevendark.ai.plugin.lib.sql.SQLStatement;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.engine.jdbc.internal.BasicFormatterImpl;
 import org.jetbrains.annotations.NotNull;
@@ -17,9 +21,6 @@ import java.awt.datatransfer.StringSelection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static com.sevendark.sql.lib.Constant.STR;
-import static com.sevendark.sql.lib.Constant.VAR;
 
 public class GenerateJooqSqlAction extends AnAction {
     private static final String Name = "Generate Jooq Sql";
@@ -31,7 +32,6 @@ public class GenerateJooqSqlAction extends AnAction {
     private Caret caret;
     private SQLMapper dialect = SQLMapper.MYSQL;
     private StringBuilder sqlResult;
-    private SQLMapperBean last;
     private List<SQLStatement> root;
     private final CopyPasteManager copyPasteManager = CopyPasteManager.getInstance();
 
@@ -48,7 +48,7 @@ public class GenerateJooqSqlAction extends AnAction {
 
         try{
             ini(selectedText);
-            root.forEach(this::appendSQL);
+            root.forEach(e -> appendSQL(e, root));
             if(sqlResult.length() != 0){
                 copyPasteManager.setContents(new StringSelection(new BasicFormatterImpl().format(sqlResult.toString())));
             }
@@ -60,60 +60,67 @@ public class GenerateJooqSqlAction extends AnAction {
 
     private void ini(StringBuilder selectedText){
         sqlResult = new StringBuilder();
-        last = null;
         root = SQLReader.readSQL(selectedText);
     }
 
-    private boolean appendSQL(SQLStatement sqlStatementBean) {
-
-        if(Objects.isNull(sqlStatementBean) || sqlStatementBean.refName.length() == 0){
-            return false;
-        }
+    private boolean appendSQL(SQLStatement sqlStatementBean, List<SQLStatement> myList) {
 
         if(!dialect.replaceMap.containsKey(sqlStatementBean.refName.toString())) {
+            sqlResult.append(replaceStr(sqlStatementBean.refName));
             return false;
         }
 
-        SQLMapperBean rule = dialect.replaceMap.get(sqlStatementBean.refName.toString());
+        SQLMapperBean rule = getRule(sqlStatementBean);
 
-        if(Objects.nonNull(last) && last.start){
+        if(getPre(sqlStatementBean, myList).isStart){
             sqlResult.append(rule.beStart);
         }
 
         if(rule.needQualifier){
-            sqlResult.append(replaceVar(sqlStatementBean.qualifierSir));
+            sqlResult.append(replaceStr(sqlStatementBean.qualifierSir));
         }
         sqlResult.append(" ");
         sqlResult.append(rule.getFinalSQLName(sqlStatementBean.refName));
         sqlResult.append(" ");
 
-        if(sqlStatementBean.bodyStr.length() != 0 || rule.placeholder.length() != 0){
-            if(rule.needParen) {
+        if(sqlStatementBean.body.size() != 0){
+            if(rule.needParen && sqlStatementBean.body.size() > 1) {
                 sqlResult.append("(");
             }
-            if(sqlStatementBean.bodyStr.length() == 0){
+            if(sqlStatementBean.body.size() == 0){
                 sqlResult.append(rule.placeholder);
-            }else if (!appendSQL(sqlStatementBean)){
-                sqlResult.append(replaceVar(sqlStatementBean.bodyStr));
+            }else{
+                sqlStatementBean.body.forEach(e -> appendSQL(e, sqlStatementBean.body));
             }
-            if(rule.needParen) {
+            if(rule.needParen && sqlStatementBean.body.size() > 1) {
                 sqlResult.append(")");
             }
             sqlResult.append(" ");
         }
 
-        last = rule;
         return true;
     }
 
-    private String replaceVar(StringBuilder str){
+    private SQLMapperBean getPre(SQLStatement sqlStatementBean, List<SQLStatement> myList){
+        int i = sqlStatementBean.i;
+        if(i > 0){
+            i--;
+        }
+        return getRule(myList.get(i));
+    }
+
+    private SQLMapperBean getRule(SQLStatement sqlStatementBean){
+        return dialect.replaceMap.get(sqlStatementBean.refName.toString());
+    }
+
+    private String replaceStr(StringBuilder str){
         if(str.length() == 0){
             return "";
         }
-        if(str.toString().matches(STR)){
+        if(str.toString().matches(Constant.STR)){
             return str.toString();
         }
-        return str.toString().replaceAll(VAR, "---");
+        return str.toString().replaceAll(Constant.VAR, "---");
     }
 
     private boolean validAndSet(AnActionEvent event){

@@ -1,4 +1,4 @@
-package com.sevendark.sql.lib;
+package com.sevendark.ai.plugin.lib.sql;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,7 +24,7 @@ public enum SQLMapper {
             put("rightOuterJoin", SQLMapperBean.build().sqlName("right outer join"));
             put("on", SQLMapperBean.build().needParen(true));
 
-            put("where", SQLMapperBean.build().needParen(true).start(true));
+            put("where", SQLMapperBean.build().needParen(true).isStart(true));
             put("orderBy", SQLMapperBean.build().sqlName("order by"));
             put("groupBy", SQLMapperBean.build().sqlName("group by"));
 

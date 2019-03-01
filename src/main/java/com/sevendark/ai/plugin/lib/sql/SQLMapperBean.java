@@ -1,4 +1,4 @@
-package com.sevendark.sql.lib;
+package com.sevendark.ai.plugin.lib.sql;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -6,7 +6,7 @@ public class SQLMapperBean {
     public boolean needParen = false;
     public boolean needQualifier = false;
     public String beStart = "";
-    public boolean start = false;
+    public boolean isStart = false;
     public String placeholder = "";
     public String sqlName = null;
 
@@ -21,8 +21,8 @@ public class SQLMapperBean {
         return this;
     }
 
-    SQLMapperBean start(boolean start){
-        this.start = start;
+    SQLMapperBean isStart(boolean isStart){
+        this.isStart = isStart;
         return this;
     }
 
