@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.sevendark.ai.plugin.AiCoder</id>
     <name>CodeTools</name>
-    <version>0.2.4</version>
+    <version>0.2.5</version>
     <vendor email="sevendark@live.com" url="https://github.com/sevendark">Personal</vendor>
 
     <description><![CDATA[
@@ -23,6 +23,10 @@
 
     <change-notes><![CDATA[
     <ul>
+        <li>version 0.2.5<br/>
+            1. support more statement <br/>
+            2. fix a lot of bugs <br/>
+        </li>
         <li>version 0.2.4<br/>
             1. support where() <br/>
             2. support equal() <br/>
