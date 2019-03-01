@@ -72,7 +72,7 @@ public class GenerateJooqSqlAction extends AnAction {
 
         SQLMapperBean rule = getRule(sqlStatementBean);
 
-        if(getPre(sqlStatementBean, myList).isStart){
+        if(getPreMapper(sqlStatementBean, myList).isStart && getPreStatement(sqlStatementBean, myList).body.size() == 0){
             sqlResult.append(rule.beStart);
         }
 
@@ -101,12 +101,16 @@ public class GenerateJooqSqlAction extends AnAction {
         return true;
     }
 
-    private SQLMapperBean getPre(SQLStatement sqlStatementBean, List<SQLStatement> myList){
+    private SQLStatement getPreStatement(SQLStatement sqlStatementBean, List<SQLStatement> myList){
         int i = sqlStatementBean.i;
         if(i > 0){
             i--;
         }
-        return getRule(myList.get(i));
+        return myList.get(i);
+    }
+
+    private SQLMapperBean getPreMapper(SQLStatement sqlStatementBean, List<SQLStatement> myList){
+        return getRule(getPreStatement(sqlStatementBean, myList));
     }
 
     private SQLMapperBean getRule(SQLStatement sqlStatementBean){
