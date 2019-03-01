@@ -124,6 +124,11 @@ public class GenerateJooqSqlAction extends AnAction {
         if(str.toString().matches(Constant.STR)){
             return str.toString();
         }
+        if(str.toString().matches(Constant.VAR)){
+            str.insert(0, "'");
+            str.append("'");
+            return str.toString();
+        }
         return str.toString().replaceAll(Constant.VAR, "---");
     }
 

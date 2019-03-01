@@ -39,6 +39,8 @@ public enum SQLMapper {
             put("le", SQLMapperBean.build().needParen(true).needQualifier(true).sqlName("<"));
             put("lt", SQLMapperBean.build().needParen(true).needQualifier(true).sqlName("<="));
             put("isTrue", SQLMapperBean.build().needQualifier(true).sqlName("= True"));
+            put("falseCondition", SQLMapperBean.build().sqlName("0=1"));
+            put("trueCondition", SQLMapperBean.build().sqlName("1=1"));
             put("isFalse", SQLMapperBean.build().needQualifier(true).sqlName("= False"));
             put("isNull", SQLMapperBean.build().needQualifier(true).sqlName("is null"));
             put("isNotNull", SQLMapperBean.build().needQualifier(true).sqlName("is not null"));
