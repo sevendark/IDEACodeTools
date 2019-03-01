@@ -1,4 +1,4 @@
-package com.sevendark.ai.lib;
+package com.sevendark.ai.plugin.lib;
 
 import java.util.ArrayList;
 import java.util.List;

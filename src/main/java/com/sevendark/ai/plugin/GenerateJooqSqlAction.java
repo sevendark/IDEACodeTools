@@ -8,21 +8,19 @@ import com.intellij.openapi.editor.Caret;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.sevendark.ai.lib.Constant;
-import com.sevendark.ai.lib.SQL;
-import com.sevendark.ai.lib.SQLRule;
-import com.sevendark.ai.lib.SQLUtil;
+import com.sevendark.ai.plugin.lib.Constant;
+import com.sevendark.ai.plugin.lib.sql.SQLMapper;
+import com.sevendark.ai.plugin.lib.sql.SQLMapperBean;
+import com.sevendark.ai.plugin.lib.sql.SQLReader;
+import com.sevendark.ai.plugin.lib.sql.SQLStatement;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.engine.jdbc.internal.BasicFormatterImpl;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.datatransfer.StringSelection;
+import java.util.List;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import static com.sevendark.ai.lib.Constant.*;
 
 public class GenerateJooqSqlAction extends AnAction {
     private static final String Name = "Generate Jooq Sql";
@@ -31,17 +29,14 @@ public class GenerateJooqSqlAction extends AnAction {
         super(Name);
     }
 
-    private Project project;
-    private Language language;
     private Caret caret;
-    private SQLUtil dialect = SQLUtil.MYSQL;
-    private StringBuilder sql;
-    private SQLRule last = null;
+    private SQLMapper dialect = SQLMapper.MYSQL;
+    private StringBuilder sqlResult;
+    private List<SQLStatement> root;
+    private final CopyPasteManager copyPasteManager = CopyPasteManager.getInstance();
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
-        final CopyPasteManager copyPasteManager = CopyPasteManager.getInstance();
-
         if(!validAndSet(event)) return;
 
         final StringBuilder selectedText = new StringBuilder(Objects.requireNonNull(caret.getSelectedText())
@@ -52,9 +47,10 @@ public class GenerateJooqSqlAction extends AnAction {
         );
 
         try{
-            appendSQL(selectedText);
-            if(sql.length() != 0){
-                copyPasteManager.setContents(new StringSelection(new BasicFormatterImpl().format(sql.toString())));
+            ini(selectedText);
+            root.forEach(e -> appendSQL(e, root));
+            if(sqlResult.length() != 0){
+                copyPasteManager.setContents(new StringSelection(new BasicFormatterImpl().format(sqlResult.toString())));
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -62,129 +58,87 @@ public class GenerateJooqSqlAction extends AnAction {
         }
     }
 
-    private boolean appendSQL(final StringBuilder selectedText) {
-        SQL sqlBean = getNext(selectedText);
+    private void ini(StringBuilder selectedText){
+        sqlResult = new StringBuilder();
+        root = SQLReader.readSQL(selectedText);
+    }
 
-        if(Objects.isNull(sqlBean) || StringUtils.isBlank(sqlBean.refName)){
+    private boolean appendSQL(SQLStatement sqlStatementBean, List<SQLStatement> myList) {
+
+        if(!dialect.replaceMap.containsKey(sqlStatementBean.refName.toString())) {
+            sqlResult.append(replaceStr(sqlStatementBean.refName));
             return false;
         }
 
-        if(!dialect.replaceMap.containsKey(sqlBean.refName)) {
-            return false;
-        }
+        SQLMapperBean rule = getRule(sqlStatementBean);
 
-        SQLRule rule = dialect.replaceMap.get(sqlBean.refName);
-
-        if(Objects.nonNull(last) && last.start){
-            sql.append(rule.beStart);
+        if(getPreMapper(sqlStatementBean, myList).isStart && getPreStatement(sqlStatementBean, myList).body.size() == 0){
+            sqlResult.append(rule.beStart);
         }
 
         if(rule.needQualifier){
-            if(StringUtils.isNotBlank(sqlBean.qualifierSir)){
-                if(!appendSQL(new StringBuilder(sqlBean.qualifierSir))){
-                    sql.append(replaceVar(sqlBean.qualifierSir));
-                }
-            }
+            sqlResult.append(replaceStr(sqlStatementBean.qualifierSir));
         }
-        sql.append(" ");
-        sql.append(rule.getFinalSQLName(sqlBean.refName));
-        sql.append(" ");
+        sqlResult.append(" ");
+        sqlResult.append(rule.getFinalSQLName(sqlStatementBean.refName));
+        sqlResult.append(" ");
 
-        if(StringUtils.isNotBlank(sqlBean.bodyStr) || StringUtils.isNotBlank(rule.placeholder)){
-            if(rule.needParen) {
-                sql.append("(");
+        if(sqlStatementBean.body.size() != 0){
+            if(rule.needParen && sqlStatementBean.body.size() > 1) {
+                sqlResult.append("(");
             }
-            if(StringUtils.isBlank(sqlBean.bodyStr)){
-                sql.append(rule.placeholder);
-            }else if (!appendSQL(new StringBuilder(sqlBean.bodyStr))){
-                sql.append(replaceVar(sqlBean.bodyStr));
+            if(sqlStatementBean.body.size() == 0){
+                sqlResult.append(rule.placeholder);
+            }else{
+                sqlStatementBean.body.forEach(e -> appendSQL(e, sqlStatementBean.body));
             }
-            if(rule.needParen) {
-                sql.append(")");
+            if(rule.needParen && sqlStatementBean.body.size() > 1) {
+                sqlResult.append(")");
             }
-            sql.append(" ");
+            sqlResult.append(" ");
         }
 
-        last = rule;
-        appendSQL(selectedText);
         return true;
     }
 
-    private String replaceVar(String str){
-        if(StringUtils.isBlank(str)){
+    private SQLStatement getPreStatement(SQLStatement sqlStatementBean, List<SQLStatement> myList){
+        int i = sqlStatementBean.i;
+        if(i > 0){
+            i--;
+        }
+        return myList.get(i);
+    }
+
+    private SQLMapperBean getPreMapper(SQLStatement sqlStatementBean, List<SQLStatement> myList){
+        return getRule(getPreStatement(sqlStatementBean, myList));
+    }
+
+    private SQLMapperBean getRule(SQLStatement sqlStatementBean){
+        return dialect.replaceMap.get(sqlStatementBean.refName.toString());
+    }
+
+    private String replaceStr(StringBuilder str){
+        if(str.length() == 0){
             return "";
         }
-        if(str.matches(STR)){
-            return str;
+        if(str.toString().matches(Constant.STR)){
+            return str.toString();
         }
-        return str.replaceAll(VAR, "---");
-    }
-
-    private SQL getSQL(StringBuilder fullMethod){
-        SQL sql = new SQL();
-
-        if(Objects.equals(fullMethod.charAt(0), '.')){
-            fullMethod.deleteCharAt(0);
+        if(str.toString().matches(Constant.VAR)){
+            str.insert(0, "'");
+            str.append("'");
+            return str.toString();
         }
-
-        final int lastIndexOfLP = fullMethod.indexOf("(");
-        if(lastIndexOfLP != -1){
-            sql.bodyStr = fullMethod.substring(fullMethod.indexOf("(") + 1, fullMethod.length() - 1);
-            fullMethod.delete(fullMethod.indexOf("("), fullMethod.length());
-        }
-
-        sql.refName = fullMethod.substring(fullMethod.lastIndexOf(".") +  1, fullMethod.length());
-        final int lastIndexOfPoint = fullMethod.lastIndexOf(".");
-        if(lastIndexOfPoint == -1){
-            fullMethod.delete(0, fullMethod.length());
-        }else{
-            fullMethod.delete(fullMethod.lastIndexOf("."), fullMethod.length());
-        }
-
-        sql.qualifierSir = fullMethod.toString();
-        return sql;
-    }
-
-    private SQL getNext(final StringBuilder code) {
-        Pattern pattern = Pattern.compile(METHOD);
-        Matcher matcher = pattern.matcher(code);
-        if (matcher.find()) {
-            int end = matcher.end();
-            if(code.charAt(end - 1) == '('){
-                end = depFind(code, end);
-            }
-            String group = code.substring(matcher.start(), end);
-            code.delete(0, end);
-            return getSQL(new StringBuilder(group));
-        }
-        return null;
-    }
-
-    private int depFind(final StringBuilder code, int start){
-        char[] chars = code.toString().toCharArray();
-        int stack = 1;
-        int end = start;
-        for (int i = start; i < chars.length; i++) {
-            end++;
-            if (chars[i] == '(') {
-                stack++;
-            } else if (chars[i] == ')') {
-                stack--;
-                if (stack == 0) {
-                    return end;
-                }
-            }
-        }
-        return start;
+        return str.toString().replaceAll(Constant.VAR, "---");
     }
 
     private boolean validAndSet(AnActionEvent event){
-        project = event.getProject();
+        Project project = event.getProject();
         if (Objects.isNull(project)) {
             Messages.showInfoMessage("Please Select a piece of JOOQ code", Name);
             return false;
         }
-        language = event.getData(DataKeys.LANGUAGE);
+        Language language = event.getData(DataKeys.LANGUAGE);
         if (Objects.isNull(language)) {
             Messages.showInfoMessage("Please Select a piece of JOOQ code", Name);
             return false;
@@ -205,7 +159,7 @@ public class GenerateJooqSqlAction extends AnAction {
             Messages.showInfoMessage("Please Select a piece of JOOQ code", Name);
             return false;
         }
-        sql = new StringBuilder();
+        sqlResult = new StringBuilder();
         return true;
     }
 }
