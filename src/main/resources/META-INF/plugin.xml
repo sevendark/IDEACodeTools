@@ -49,10 +49,10 @@
     <actions>
         <group id="com.sevendark.ai.plugin.GroupedActions" text="CodeTools" popup="true">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <action id="com.sevendark.ai.plugin.OptionChangeAction" class="com.sevendark.ai.plugin.OptionChangeAction"
+            <action id="com.sevendark.ai.plugin.OptionChangeAction" class="com.sevendark.coverter.plugin.OptionChangeAction"
                     text="Play Option to Java Optional" description="Will change all Play Option ref to Java8 Optional">
             </action>
-            <action id="com.sevendark.ai.plugin.GenerateJooqSqlAction" class="com.sevendark.ai.plugin.GenerateJooqSqlAction"
+            <action id="com.sevendark.ai.plugin.GenerateJooqSqlAction" class="com.sevendark.sql.plugin.GenerateJooqSqlAction"
                     text="Transform Jooq to Sql" description="Transform Jooq code to Sql script">
                 <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt g"/>
             </action>

@@ -1,8 +1,8 @@
-package com.sevendark.ai.lib;
+package com.sevendark.sql.lib;
 
 import org.apache.commons.lang.StringUtils;
 
-public class SQLRule {
+public class SQLMapperBean {
     public boolean needParen = false;
     public boolean needQualifier = false;
     public String beStart = "";
@@ -11,42 +11,42 @@ public class SQLRule {
     public String sqlName = null;
 
 
-    SQLRule needParen(boolean needParen){
+    SQLMapperBean needParen(boolean needParen){
         this.needParen = needParen;
         return this;
     }
 
-    SQLRule needQualifier(boolean needQualifier){
+    SQLMapperBean needQualifier(boolean needQualifier){
         this.needQualifier = needQualifier;
         return this;
     }
 
-    SQLRule start(boolean start){
+    SQLMapperBean start(boolean start){
         this.start = start;
         return this;
     }
 
-    SQLRule beStart(String beStart){
+    SQLMapperBean beStart(String beStart){
         this.beStart = beStart;
         return this;
     }
 
-    SQLRule placehoder(String placeholder){
+    SQLMapperBean placehoder(String placeholder){
         this.placeholder = placeholder;
         return this;
     }
 
-    SQLRule sqlName(String sqlName){
+    SQLMapperBean sqlName(String sqlName){
         this.sqlName = sqlName;
         return this;
     }
 
-    static SQLRule build(){
-        return new SQLRule();
+    static SQLMapperBean build(){
+        return new SQLMapperBean();
     }
 
-    public String getFinalSQLName(String sqlName){
-        return StringUtils.isBlank(this.sqlName) ? sqlName : this.sqlName;
+    public String getFinalSQLName(StringBuilder sqlName){
+        return StringUtils.isBlank(this.sqlName) ? sqlName.toString() : this.sqlName;
     }
 
 }

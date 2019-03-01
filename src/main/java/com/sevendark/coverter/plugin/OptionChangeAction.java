@@ -1,4 +1,4 @@
-package com.sevendark.ai.plugin;
+package com.sevendark.coverter.plugin;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -13,7 +13,7 @@ import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.util.Query;
-import com.sevendark.ai.lib.Constant;
+import com.sevendark.sql.lib.Constant;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiManager;
 import scala.Option;
