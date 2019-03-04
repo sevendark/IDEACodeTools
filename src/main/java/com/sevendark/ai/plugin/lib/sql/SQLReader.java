@@ -18,7 +18,16 @@ public class SQLReader {
             Objects.nonNull(statement);
             statement = getNext(selectedText)){
             statement.i = i++;
-            statement.body = readSQL(statement.bodyStr);
+            if(statement.bodyStr.toString().matches(Constant.STR)){
+                List<SQLStatement> temp = new ArrayList<>();
+                SQLStatement s = new SQLStatement();
+                s.refName = new StringBuilder(statement.bodyStr);
+                temp.add(s);
+                statement.body = temp;
+            }else{
+                statement.body = readSQL(statement.bodyStr);
+            }
+
             root.add(statement);
         }
 
