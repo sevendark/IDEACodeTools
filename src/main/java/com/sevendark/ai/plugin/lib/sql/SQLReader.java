@@ -18,14 +18,23 @@ public class SQLReader {
             Objects.nonNull(statement);
             statement = getNext(selectedText)){
             statement.i = i++;
-            statement.body = readSQL(statement.bodyStr);
+            if(statement.bodyStr.toString().matches(Constant.STR)){
+                List<SQLStatement> temp = new ArrayList<>();
+                SQLStatement s = new SQLStatement();
+                s.refName = new StringBuilder(statement.bodyStr);
+                temp.add(s);
+                statement.body = temp;
+            }else{
+                statement.body = readSQL(statement.bodyStr);
+            }
+
             root.add(statement);
         }
 
         return root;
     }
 
-    private static SQLStatement getSQL(StringBuilder fullMethod){
+    private static SQLStatement getSQL(StringBuilder fullMethod, boolean haveDott){
         SQLStatement sqlStatement = new SQLStatement();
 
         if(Objects.equals(fullMethod.charAt(0), '.')){
@@ -47,6 +56,7 @@ public class SQLReader {
         }
 
         sqlStatement.qualifierSir = new StringBuilder(fullMethod);
+        sqlStatement.haveDott = haveDott;
         return sqlStatement;
     }
 
@@ -60,7 +70,12 @@ public class SQLReader {
             }
             String group = code.substring(matcher.start(), end);
             code.delete(0, end);
-            return getSQL(new StringBuilder(group));
+            boolean haveDott = false;
+            if(code.length() > 0 && code.charAt(0) == ','){
+                haveDott = true;
+                code.deleteCharAt(0);
+            }
+            return getSQL(new StringBuilder(group), haveDott);
         }
         return null;
     }

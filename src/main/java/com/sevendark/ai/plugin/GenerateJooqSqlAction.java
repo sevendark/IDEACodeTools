@@ -63,11 +63,14 @@ public class GenerateJooqSqlAction extends AnAction {
         root = SQLReader.readSQL(selectedText);
     }
 
-    private boolean appendSQL(SQLStatement sqlStatementBean, List<SQLStatement> myList) {
+    private void appendSQL(SQLStatement sqlStatementBean, List<SQLStatement> myList) {
 
         if(!dialect.replaceMap.containsKey(sqlStatementBean.refName.toString())) {
-            sqlResult.append(replaceStr(sqlStatementBean.refName));
-            return false;
+            sqlResult.append(replaceStatement(sqlStatementBean));
+            if(sqlStatementBean.haveDott){
+                sqlResult.append(",");
+            }
+            return;
         }
 
         SQLMapperBean rule = getRule(sqlStatementBean);
@@ -98,7 +101,6 @@ public class GenerateJooqSqlAction extends AnAction {
             sqlResult.append(" ");
         }
 
-        return true;
     }
 
     private SQLStatement getPreStatement(SQLStatement sqlStatementBean, List<SQLStatement> myList){
@@ -115,6 +117,22 @@ public class GenerateJooqSqlAction extends AnAction {
 
     private SQLMapperBean getRule(SQLStatement sqlStatementBean){
         return dialect.replaceMap.get(sqlStatementBean.refName.toString());
+    }
+
+    private String replaceStatement(SQLStatement sqlStatementBean){
+        if(sqlStatementBean.refName.toString().equals("name")){
+            final List<SQLStatement> enumQu = SQLReader.readSQL(sqlStatementBean.qualifierSir);
+            if(enumQu.size() > 0){
+                return enumQu.get(0).refName.insert(0, "'").append("'").toString();
+            }
+        }
+        StringBuilder all;
+        if(sqlStatementBean.qualifierSir.length() == 0){
+            all = sqlStatementBean.refName;
+        }else{
+            all = sqlStatementBean.qualifierSir.append(".").append(sqlStatementBean.refName);
+        }
+        return replaceStr(all);
     }
 
     private String replaceStr(StringBuilder str){
