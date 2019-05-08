@@ -52,7 +52,6 @@
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
     <depends>com.intellij.modules.java</depends>
-    <depends optional="true">org.intellij.scala</depends>
 
     <actions>
         <group id="com.sevendark.ai.plugin.GroupedActions" text="CodeTools" popup="true">
