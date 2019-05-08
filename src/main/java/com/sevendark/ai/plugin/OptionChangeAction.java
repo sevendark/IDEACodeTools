@@ -37,7 +37,7 @@ public class OptionChangeAction extends AnAction {
     public void actionPerformed(@NotNull AnActionEvent actionEvent) {
         final Project project = actionEvent.getProject();
         int ask = Messages.showOkCancelDialog(project,
-                "Are you sure want to replace all Play Option to Java8 Optional? (This may take a few minus)",
+                "Are you sure want to replace all Play Option to Java8 Optional? (This may UI freezes a few minus)",
                 Name, Messages.getWarningIcon());
         if (Messages.CANCEL == ask) {
             return;
