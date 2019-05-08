@@ -66,7 +66,7 @@ public class SQLReader {
         if (matcher.find()) {
             int end = matcher.end();
             if(code.charAt(end - 1) == '('){
-                end = depFind(code, end);
+                end = depFind(code, end, matcher.group());
             }
             String group = code.substring(matcher.start(), end);
             code.delete(0, end);
@@ -80,7 +80,7 @@ public class SQLReader {
         return null;
     }
 
-    private static int depFind(final StringBuilder code, int start){
+    private static int depFind(final StringBuilder code, int start, String methodName) {
         char[] chars = code.toString().toCharArray();
         int stack = 1;
         int end = start;
@@ -95,6 +95,6 @@ public class SQLReader {
                 }
             }
         }
-        return start;
+        throw new IllegalArgumentException("can't find " + methodName + " ')'");
     }
 }

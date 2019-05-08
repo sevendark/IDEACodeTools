@@ -12,6 +12,7 @@ public enum SQLMapper {
             put("select", SQLMapperBean.build().placehoder("*"));
             put("selectOne", SQLMapperBean.build().sqlName("select 1"));
             put("selectDistinct", SQLMapperBean.build().sqlName("select distinct"));
+            put("selectFrom", SQLMapperBean.build().sqlName("select * from"));
             put("selectCount", SQLMapperBean.build().sqlName("select \n\tcount(1)"));
             put("as", SQLMapperBean.build().needQualifier(true));
 
@@ -48,6 +49,10 @@ public enum SQLMapper {
 
             put("and", SQLMapperBean.build().needParen(true).beStart("1=1"));
             put("or", SQLMapperBean.build().needParen(true).beStart("0=1"));
+
+            put("set", SQLMapperBean.build().onlyNeedFirst(",").replaceSplit("="));
+            put("update", SQLMapperBean.build());
+            put("deleteFrom", SQLMapperBean.build());
 
             put("desc", SQLMapperBean.build().needQualifier(true));
             put("asc", SQLMapperBean.build().needQualifier(true));

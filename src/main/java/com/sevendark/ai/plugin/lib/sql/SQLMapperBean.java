@@ -7,7 +7,9 @@ public class SQLMapperBean {
     public boolean needQualifier = false;
     public String beStart = "";
     public boolean isStart = false;
+    public String onlyNeedFirst = "";
     public String placeholder = "";
+    public String replaceSplit = "";
     public String sqlName = null;
 
 
@@ -26,8 +28,18 @@ public class SQLMapperBean {
         return this;
     }
 
+    SQLMapperBean onlyNeedFirst(String onlyNeedFirst){
+        this.onlyNeedFirst = onlyNeedFirst;
+        return this;
+    }
+
     SQLMapperBean beStart(String beStart){
         this.beStart = beStart;
+        return this;
+    }
+
+    SQLMapperBean replaceSplit(String replaceSplit){
+        this.replaceSplit = replaceSplit;
         return this;
     }
 

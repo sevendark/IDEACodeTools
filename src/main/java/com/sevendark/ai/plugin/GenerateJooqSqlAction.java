@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.datatransfer.StringSelection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class GenerateJooqSqlAction extends AnAction {
@@ -48,13 +49,15 @@ public class GenerateJooqSqlAction extends AnAction {
 
         try{
             ini(selectedText);
-            root.forEach(e -> appendSQL(e, root));
+            SQLStatement parent = new SQLStatement();
+            parent.body = root;
+            root.forEach(e -> appendSQL(e, parent));
             if(sqlResult.length() != 0){
                 copyPasteManager.setContents(new StringSelection(new BasicFormatterImpl().format(sqlResult.toString())));
             }
         }catch (Exception e){
             e.printStackTrace();
-            Messages.showErrorDialog(e.getLocalizedMessage(), Name);
+            Messages.showInfoMessage(e.getMessage(), Name);
         }
     }
 
@@ -63,12 +66,24 @@ public class GenerateJooqSqlAction extends AnAction {
         root = SQLReader.readSQL(selectedText);
     }
 
-    private void appendSQL(SQLStatement sqlStatementBean, List<SQLStatement> myList) {
+    private void appendSQL(SQLStatement sqlStatementBean, SQLStatement parent) {
+        List<SQLStatement> myList = parent.body;
 
         if(!dialect.replaceMap.containsKey(sqlStatementBean.refName.toString())) {
             sqlResult.append(replaceStatement(sqlStatementBean));
-            if(sqlStatementBean.haveDott){
+            SQLMapperBean parentRule;
+            if(StringUtils.isNotBlank(parent.refName.toString())) {
+                parentRule = getRule(parent);
+            }else{
+                parentRule = new SQLMapperBean();
+                parentRule.replaceSplit = "";
+            }
+
+            if(sqlStatementBean.haveDott && StringUtils.isBlank(parentRule.replaceSplit)){
                 sqlResult.append(",");
+            }
+            if(sqlStatementBean.haveDott && StringUtils.isNotBlank(parentRule.replaceSplit)){
+                sqlResult.append(parentRule.replaceSplit);
             }
             return;
         }
@@ -83,7 +98,13 @@ public class GenerateJooqSqlAction extends AnAction {
             sqlResult.append(replaceStr(sqlStatementBean.qualifierSir));
         }
         sqlResult.append(" ");
-        sqlResult.append(rule.getFinalSQLName(sqlStatementBean.refName));
+        if(StringUtils.isBlank(rule.onlyNeedFirst)){
+            sqlResult.append(rule.getFinalSQLName(sqlStatementBean.refName));
+        } else if(StringUtils.isNotBlank(rule.onlyNeedFirst) && isFirstMe(myList, sqlStatementBean)){
+            sqlResult.append(rule.getFinalSQLName(sqlStatementBean.refName));
+        } else if(StringUtils.isNotBlank(rule.onlyNeedFirst) && !isFirstMe(myList, sqlStatementBean)) {
+            sqlResult.append(rule.onlyNeedFirst);
+        }
         sqlResult.append(" ");
 
         if(sqlStatementBean.body.size() != 0){
@@ -93,7 +114,7 @@ public class GenerateJooqSqlAction extends AnAction {
             if(sqlStatementBean.body.size() == 0){
                 sqlResult.append(rule.placeholder);
             }else{
-                sqlStatementBean.body.forEach(e -> appendSQL(e, sqlStatementBean.body));
+                sqlStatementBean.body.forEach(e -> appendSQL(e, sqlStatementBean));
             }
             if(rule.needParen && sqlStatementBean.body.size() > 1) {
                 sqlResult.append(")");
@@ -101,6 +122,14 @@ public class GenerateJooqSqlAction extends AnAction {
             sqlResult.append(" ");
         }
 
+    }
+
+
+    private boolean isFirstMe(List<SQLStatement> myList, SQLStatement sqlStatementBean){
+        final Optional<SQLStatement> first = myList.stream()
+                .filter(s -> s.refName.toString().equals(sqlStatementBean.refName.toString()))
+                .findFirst();
+        return first.map(s -> s.i == sqlStatementBean.i).orElse(true);
     }
 
     private SQLStatement getPreStatement(SQLStatement sqlStatementBean, List<SQLStatement> myList){
@@ -116,7 +145,11 @@ public class GenerateJooqSqlAction extends AnAction {
     }
 
     private SQLMapperBean getRule(SQLStatement sqlStatementBean){
-        return dialect.replaceMap.get(sqlStatementBean.refName.toString());
+        final SQLMapperBean sqlMapperBean = dialect.replaceMap.get(sqlStatementBean.refName.toString());
+        if(sqlMapperBean == null) throw new IllegalArgumentException("not support " +
+                sqlStatementBean.refName +
+                "now , but you can only transform condition of it.");
+        return sqlMapperBean;
     }
 
     private String replaceStatement(SQLStatement sqlStatementBean){
