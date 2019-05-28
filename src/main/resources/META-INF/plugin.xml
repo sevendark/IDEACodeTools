@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.sevendark.ai.plugin.AiCoder</id>
     <name>CodeTools</name>
-    <version>0.2.7</version>
+    <version>0.3.0</version>
     <vendor email="sevendark@live.com" url="https://github.com/sevendark">Personal</vendor>
 
     <description><![CDATA[
@@ -10,6 +10,7 @@
        this tools can help replace them.<br/>
     2. When you need to copy jooq code to run on Navicat, or Workbench, <br/>
        this tools can help generate sql script.<br/>
+    3. Also you can convert sql to jooq code.(preview)<br/>
 
     <h3>Where can find menu:</h3>
     On top menus , Open Tools -> CodeTools, then you can see all tools<br/>
@@ -19,10 +20,20 @@
         eg: select().from(TBLUSER).where(TBLUSER.ID.eq(1))<br/>
     2. press `ctrl+alt+g`<br/>
     3. paste SQL anywhere<br/>
+
+    <h3>How to use Transform SQL Jooq code</h3>
+    1. copy SQL<br/>
+    2. select the function in the menu<br/>
+    3. paste code anywhere<br/>
+    <br/>
+    depend on <a href="https://github.com/JSQLParser/JSqlParser">JSqlParser</a>
     ]]></description>
 
     <change-notes><![CDATA[
     <ul>
+        <li>version 0.3.0<br/>
+            1. add new feature: convert sql to jooq code. (preview)<br/>
+        </li>
         <li>version 0.2.7<br/>
             1. optimize error message <br/>
             2. support more statement: selectFrom, deleteFrom, update,set <br/>
@@ -67,6 +78,9 @@
             <action id="com.sevendark.ai.plugin.GenerateJooqSqlAction" class="com.sevendark.ai.plugin.GenerateJooqSqlAction"
                     text="Transform Jooq to Sql" description="Transform Jooq code to Sql script">
                 <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt g"/>
+            </action>
+            <action id="com.sevendark.ai.plugin.SqlToJooqAction" class="com.sevendark.ai.plugin.SqlToJooqAction"
+                    text="Transform SQL to Jooq" description="Transform SQL to jooq code">
             </action>
         </group>
     </actions>
