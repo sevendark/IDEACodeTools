@@ -7,6 +7,7 @@ Intellij Idea plugin
 ## Features:
 1. Update `play.libs.F.Option` to `java.util.Optional`
 2. Transform Jooq code to Sql script
+3. Transform SQL script to Jooq code
  
 ## Install:
 1. <kbd>Settings</kbd> -> <kbd>Plugins</kbd> -> <kbd>Marketplace</kbd> search `CodeTools` to install
