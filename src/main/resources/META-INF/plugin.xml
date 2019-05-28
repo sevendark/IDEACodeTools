@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.sevendark.ai.plugin.AiCoder</id>
     <name>CodeTools</name>
-    <version>0.2.3</version>
+    <version>0.2.7</version>
     <vendor email="sevendark@live.com" url="https://github.com/sevendark">Personal</vendor>
 
     <description><![CDATA[
@@ -16,13 +16,32 @@
 
     <h3>How to use Transform Jooq code</h3>
     1. select a piece jooq code<br/>
-        eg: select().from(TBLUSER).where(TBLUSER.ID.eq(1))
+        eg: select().from(TBLUSER).where(TBLUSER.ID.eq(1))<br/>
     2. press `ctrl+alt+g`<br/>
     3. paste SQL anywhere<br/>
     ]]></description>
 
     <change-notes><![CDATA[
     <ul>
+        <li>version 0.2.7<br/>
+            1. optimize error message <br/>
+            2. support more statement: selectFrom, deleteFrom, update,set <br/>
+            3. remove scala dependencies <br/>
+        </li>
+        <li>version 0.2.6<br/>
+            1. fix bugs <br/>
+            2. write bugs <br/>
+        </li>
+        <li>version 0.2.5<br/>
+            1. support more statement <br/>
+            2. fix a lot of bugs <br/>
+        </li>
+        <li>version 0.2.4<br/>
+            1. support where() <br/>
+            2. support equal() <br/>
+            3. support selectOne <br/>
+            4. more fast<br/>
+        </li>
         <li>version 0.2.3<br/>
             Add feature: Transform jooq code to sql script
         </li>
@@ -38,7 +57,6 @@
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
     <depends>com.intellij.modules.java</depends>
-    <depends optional="true">org.intellij.scala</depends>
 
     <actions>
         <group id="com.sevendark.ai.plugin.GroupedActions" text="CodeTools" popup="true">

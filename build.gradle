@@ -11,6 +11,12 @@ repositories {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+
+dependencies {
+    compile 'org.hibernate:hibernate-core:4.3.6.Final'
+}
+
+
 intellij {
     version '2018.3'
     pluginName 'CodeTools'
@@ -19,4 +25,4 @@ intellij {
 }
 
 group 'com.sevendark.ai'
-version '0.2.3'
+version '0.2.7'
