@@ -14,6 +14,7 @@ targetCompatibility = 1.8
 
 dependencies {
     compile 'org.hibernate:hibernate-core:4.3.6.Final'
+    compile group: 'com.github.jsqlparser', name: 'jsqlparser', version: '2.0'
 }
 
 
@@ -25,4 +26,4 @@ intellij {
 }
 
 group 'com.sevendark.ai'
-version '0.2.7'
+version '0.3.0'
