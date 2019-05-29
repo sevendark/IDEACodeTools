@@ -4,3 +4,5 @@ build
 gradle
 *.iml
 gradle.properties
+out
+classes

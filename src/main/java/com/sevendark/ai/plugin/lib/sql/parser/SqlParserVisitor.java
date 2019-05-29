@@ -34,6 +34,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
         FromItemVisitor, GroupByVisitor, IntoTableVisitor, ItemsListVisitor, OrderByVisitor, PivotVisitor {
 
     private StringBuilder sb;
+    private String onlyTable;
     private Map<String, String> aliasTableMap;
 
     private SqlParserVisitor() {
@@ -44,7 +45,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
         this.aliasTableMap = new HashMap<>();
     }
 
-    public static SqlParserVisitor of() {
+    public static SqlParserVisitor instance() {
         return new SqlParserVisitor(new StringBuilder("dslContext"));
     }
 
@@ -52,14 +53,15 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
         return new SqlParserVisitor(new StringBuilder(dslName));
     }
 
-    public String parse(String sql) {
+    public static String parse(String sql) {
         try {
             Statement statement = CCJSqlParserUtil.parse(filterBacktick(sql));
-            SqlParserVisitor visitor = SqlParserVisitor.of();
+            SqlParserVisitor visitor = SqlParserVisitor.instance();
             statement.accept(visitor);
             return visitor.toString();
         } catch (Exception e) {
-            return null;
+            e.printStackTrace();
+            return "Can not convert :(";
         }
     }
 
@@ -130,7 +132,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(LongValue longValue) {
-        sb.append(longValue.getValue()).append("L");
+        sb.append(longValue.getValue());
     }
 
     @Override
@@ -277,7 +279,14 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(Column tableColumn) {
-        tableColumn.getTable().accept((FromItemVisitor) this);
+        if (tableColumn.getTable() != null) {
+            tableColumn.getTable().accept((FromItemVisitor) this);
+        } else if (onlyTable != null) {
+            sb.append(onlyTable);
+        } else {
+            sb.append(tableColumn.getColumnName().toUpperCase());
+            return;
+        }
         sb.append(".").append(tableColumn.getColumnName().toUpperCase());
     }
 
@@ -307,20 +316,28 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
         subjoin.getLeft().accept(this);
         if (subjoin.getJoinList() != null) {
             for (Join join : subjoin.getJoinList()) {
-                sb.append("\n.");
-                if (join.isInner()) {
-                    sb.append("innerJoin(");
-                } else if (join.isLeft()) {
-                    sb.append("leftOuterJoin(");
-                } else {
-                    sb.append("join(");
-                }
-                join.getRightItem().accept(this);
-                sb.append(")\n.on(");
-                join.getOnExpression().accept(this);
-                sb.append(")");
+                visit(join);
             }
         }
+    }
+
+    private void visit(Join join) {
+        sb.append("\n.");
+        if (join.isInner()) {
+            sb.append("innerJoin(");
+        } else if (join.isLeft()) {
+            sb.append("leftOuterJoin(");
+        } else if (join.isRight()) {
+            sb.append("rightOuterJoin(");
+        } else if (join.isCross()) {
+            sb.append("crossJoin(");
+        } else {
+            sb.append("join(");
+        }
+        join.getRightItem().accept(this);
+        sb.append(")\n.on(");
+        join.getOnExpression().accept(this);
+        sb.append(")");
     }
 
     @Override
@@ -550,7 +567,36 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(Delete delete) {
-        System.out.println(delete.getClass().getName() + "    " + delete.toString());
+        sb.append("\n.deleteFrom(");
+        if (delete.getTable() != null) {
+            this.visit(delete.getTable());
+        }
+        sb.append(")");
+        if (delete.getJoins() != null) {
+            for (Join join : delete.getJoins()) {
+                visit(join);
+            }
+        }
+        if (delete.getWhere() != null) {
+            sb.append("\n.where(");
+            delete.getWhere().accept(this);
+            sb.append(")");
+        }
+        if (delete.getOrderByElements() != null) {
+            sb.append("\n.orderBy(");
+            for (OrderByElement orderByElement : delete.getOrderByElements()) {
+                orderByElement.accept(this);
+            }
+            sb.append(")");
+        }
+        if (delete.getLimit() != null) {
+            Limit limit = delete.getLimit();
+            if (limit.getRowCount() != null) {
+                sb.append("\n.limit(");
+                limit.getRowCount().accept(this);
+                sb.append(")");
+            }
+        }
     }
 
     @Override
@@ -655,6 +701,13 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
         if (plainSelect.getFromItem() != null) {
             AliasTableNameFinder aliasTableNameFinder = new AliasTableNameFinder();
             aliasTableMap.putAll(aliasTableNameFinder.getTableMap(plainSelect.getFromItem()));
+            onlyTable = aliasTableNameFinder.getOnlyTable();
+        }
+        if (plainSelect.getJoins() != null) {
+            for (Join join : plainSelect.getJoins()) {
+                AliasTableNameFinder aliasTableNameFinder = new AliasTableNameFinder();
+                aliasTableMap.putAll(aliasTableNameFinder.getTableMap(join.getRightItem()));
+            }
         }
         sb.append("\n.select(");
         if (plainSelect.getSelectItems() != null) {
@@ -668,6 +721,11 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
             plainSelect.getFromItem().accept(this);
             sb.append(")");
         }
+        if (plainSelect.getJoins() != null) {
+            for (Join join : plainSelect.getJoins()) {
+                visit(join);
+            }
+        }
         if (plainSelect.getWhere() != null) {
             sb.append("\n.where(");
             plainSelect.getWhere().accept(this);
@@ -680,15 +738,27 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
             plainSelect.getHaving().accept(this);
         }
         if (plainSelect.getOrderByElements() != null) {
+            sb.append("\n.orderBy(");
             for (OrderByElement orderByElement : plainSelect.getOrderByElements()) {
                 orderByElement.accept(this);
             }
+            sb.append(")");
         }
         if (plainSelect.getOffset() != null) {
-            sb.append("\n.offset(").append(plainSelect.getOffset().getOffset()).append("L)");
+            sb.append("\n.offset(").append(plainSelect.getOffset().getOffset()).append(")");
         }
         if (plainSelect.getLimit() != null) {
-            // TODO how to?
+            Limit limit = plainSelect.getLimit();
+            if (limit.getOffset() != null) {
+                sb.append("\n.offset(");
+                limit.getOffset().accept(this);
+                sb.append(")");
+            }
+            if (limit.getRowCount() != null) {
+                sb.append("\n.limit(");
+                limit.getRowCount().accept(this);
+                sb.append(")");
+            }
         }
     }
 
@@ -719,12 +789,21 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(GroupByElement groupBy) {
-        System.out.println(groupBy.getClass().getName() + "    " + groupBy.toString());
+        if (groupBy.getGroupByExpressions() != null) {
+            sb.append("\n.groupBy(");
+            for (Expression expression : groupBy.getGroupByExpressions()) {
+                sb.append(",");
+                expression.accept(this);
+            }
+            sb.append(")");
+        }
     }
 
     @Override
     public void visit(OrderByElement orderBy) {
-        System.out.println(orderBy.getClass().getName() + "    " + orderBy.toString());
+        sb.append(",");
+        orderBy.getExpression().accept(this);
+        sb.append(orderBy.isAsc() ? ".asc()" : ".desc()");
     }
 
     @Override

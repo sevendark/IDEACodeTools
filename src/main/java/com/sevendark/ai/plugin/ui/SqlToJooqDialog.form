@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.sevendark.ai.plugin.ui.SqlToJooqDialog">
+  <grid id="cbd77" binding="contentPane" layout-manager="BorderLayout" hgap="0" vgap="0">
+    <constraints>
+      <xy x="48" y="54" width="913" height="529"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <component id="687eb" class="javax.swing.JLabel" binding="introLabel">
+        <constraints border-constraint="North"/>
+        <properties>
+          <text value="Input SQL in the left side, or input jooq code in the right side."/>
+        </properties>
+      </component>
+      <grid id="e3588" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="5" left="0" bottom="0" right="0"/>
+        <constraints border-constraint="Center"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <splitpane id="f3e8f">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                <preferred-size width="710" height="400"/>
+              </grid>
+            </constraints>
+            <properties>
+              <dividerLocation value="350"/>
+              <enabled value="true"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <scrollpane id="27aa1">
+                <constraints>
+                  <splitpane position="left"/>
+                </constraints>
+                <properties>
+                  <horizontalScrollBarPolicy value="30"/>
+                </properties>
+                <border type="none"/>
+                <children>
+                  <component id="eabf" class="javax.swing.JTextArea" binding="sqlArea">
+                    <constraints/>
+                    <properties>
+                      <lineWrap value="false"/>
+                    </properties>
+                  </component>
+                </children>
+              </scrollpane>
+              <scrollpane id="f5ea4">
+                <constraints>
+                  <splitpane position="right"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="fc4a8" class="javax.swing.JTextArea" binding="jooqArea">
+                    <constraints/>
+                    <properties>
+                      <lineWrap value="false"/>
+                    </properties>
+                  </component>
+                </children>
+              </scrollpane>
+            </children>
+          </splitpane>
+        </children>
+      </grid>
+      <grid id="94766" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints border-constraint="South"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <grid id="9538f" layout-manager="GridLayoutManager" row-count="1" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="dc713" class="javax.swing.JButton" binding="copySqlBtn">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Copy SQL"/>
+                </properties>
+              </component>
+              <component id="b0242" class="javax.swing.JButton" binding="copyJooqBtn">
+                <constraints>
+                  <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Copy Jooq"/>
+                </properties>
+              </component>
+              <component id="17c0a" class="javax.swing.JButton" binding="sqlToJooqBtn">
+                <constraints>
+                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="SQL to Jooq &gt;&gt;"/>
+                </properties>
+              </component>
+              <component id="253e3" class="javax.swing.JButton" binding="jooqToSqlBtn">
+                <constraints>
+                  <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="&lt;&lt;Jooq to SQL"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
+        </children>
+      </grid>
+    </children>
+  </grid>
+</form>
