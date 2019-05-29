@@ -20,10 +20,11 @@
         eg: select().from(TBLUSER).where(TBLUSER.ID.eq(1))<br/>
     2. press `ctrl+alt+g`<br/>
     3. paste SQL anywhere<br/>
-
-    depend on <a href="https://github.com/JSQLParser/JSqlParser">JSqlParser</a>
     <br/>
+    depend on <a href="https://github.com/JSQLParser/JSqlParser">JSqlParser</a>
+    <br/><br/>
     <a href="https://github.com/sevendark/IDEACodeTools/issues/new/choose">Feedback</a>
+    <br/>
     ]]></description>
 
     <change-notes><![CDATA[
