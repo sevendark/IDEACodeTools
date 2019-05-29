@@ -11,7 +11,7 @@ import javax.swing.*;
 
 public class SqlToJooqAction extends AnAction {
 
-    private static final String Name = "SQL to Jooq";
+    private static final String Name = "SQL/Jooq Converter...";
 
     public SqlToJooqAction() {
         super(Name);
@@ -23,7 +23,7 @@ public class SqlToJooqAction extends AnAction {
         DialogWrapper dialogWrapper = new DialogWrapper(event.getProject()) {
             {
                 init();
-                setTitle("Convert SQL to Jooq");
+                setTitle("SQL <-> Jooq");
             }
 
             @Nullable
@@ -49,7 +49,7 @@ public class SqlToJooqAction extends AnAction {
                 super.doOKAction();
             }
         };
-        dialogWrapper.setSize(600, 460);
+        dialogWrapper.setSize(730, 460);
         dialogWrapper.show();
     }
 }

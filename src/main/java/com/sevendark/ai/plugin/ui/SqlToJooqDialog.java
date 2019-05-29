@@ -5,6 +5,7 @@ import com.sevendark.ai.plugin.lib.sql.JooqToSqlConverter;
 import com.sevendark.ai.plugin.lib.sql.parser.SqlParserVisitor;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 
@@ -24,6 +25,8 @@ public class SqlToJooqDialog extends JDialog {
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(sqlToJooqBtn);
+        sqlArea.setFont(new Font("monospaced", Font.PLAIN, 12));
+        jooqArea.setFont(new Font("monospaced", Font.PLAIN, 12));
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);

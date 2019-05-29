@@ -22,6 +22,8 @@
     3. paste SQL anywhere<br/>
 
     depend on <a href="https://github.com/JSQLParser/JSqlParser">JSqlParser</a>
+    <br/>
+    <a href="https://github.com/sevendark/IDEACodeTools/issues/new/choose">Feedback</a>
     ]]></description>
 
     <change-notes><![CDATA[
@@ -78,7 +80,7 @@
                 <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt g"/>
             </action>
             <action id="com.sevendark.ai.plugin.SqlToJooqAction" class="com.sevendark.ai.plugin.SqlToJooqAction"
-                    text="Transform SQL to Jooq..." description="Open dialog to transform SQL to jooq code">
+                    text="SQL/Jooq Converter..." description="Open dialog to convert between SQL and jooq code">
             </action>
         </group>
     </actions>
