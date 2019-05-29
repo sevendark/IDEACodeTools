@@ -47,6 +47,7 @@ public class AliasTableNameFinder implements SelectVisitor, FromItemVisitor, Exp
     private boolean allowColumnProcessing = false;
 
     private List<String> otherItemNames;
+    private String onlyTable;
 
     public Map<String, String> getTableList(Statement statement) {
         init(false);
@@ -58,6 +59,10 @@ public class AliasTableNameFinder implements SelectVisitor, FromItemVisitor, Exp
         init(false);
         fromItem.accept(this);
         return tables;
+    }
+
+    public String getOnlyTable() {
+        return onlyTable;
     }
 
     @Override
@@ -131,6 +136,8 @@ public class AliasTableNameFinder implements SelectVisitor, FromItemVisitor, Exp
         if (!otherItemNames.contains(tableWholeName.toLowerCase())) {
             if (tableName.getAlias() != null) {
                 tables.put(tableName.getAlias().getName(), tableName.getName());
+            } else {
+                onlyTable = tableName.getName().toUpperCase();
             }
         }
     }

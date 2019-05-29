@@ -34,6 +34,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
         FromItemVisitor, GroupByVisitor, IntoTableVisitor, ItemsListVisitor, OrderByVisitor, PivotVisitor {
 
     private StringBuilder sb;
+    private String onlyTable;
     private Map<String, String> aliasTableMap;
 
     private SqlParserVisitor() {
@@ -59,6 +60,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
             statement.accept(visitor);
             return visitor.toString();
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -277,7 +279,14 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(Column tableColumn) {
-        tableColumn.getTable().accept((FromItemVisitor) this);
+        if (tableColumn.getTable() != null) {
+            tableColumn.getTable().accept((FromItemVisitor) this);
+        } else if (onlyTable != null) {
+            sb.append(onlyTable);
+        } else {
+            sb.append(tableColumn.getColumnName().toUpperCase());
+            return;
+        }
         sb.append(".").append(tableColumn.getColumnName().toUpperCase());
     }
 
@@ -655,6 +664,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
         if (plainSelect.getFromItem() != null) {
             AliasTableNameFinder aliasTableNameFinder = new AliasTableNameFinder();
             aliasTableMap.putAll(aliasTableNameFinder.getTableMap(plainSelect.getFromItem()));
+            onlyTable = aliasTableNameFinder.getOnlyTable();
         }
         sb.append("\n.select(");
         if (plainSelect.getSelectItems() != null) {
