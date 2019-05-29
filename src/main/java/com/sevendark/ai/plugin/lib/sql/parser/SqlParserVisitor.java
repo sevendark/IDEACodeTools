@@ -567,7 +567,36 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(Delete delete) {
-        System.out.println(delete.getClass().getName() + "    " + delete.toString());
+        sb.append("\n.deleteFrom(");
+        if (delete.getTable() != null) {
+            this.visit(delete.getTable());
+        }
+        sb.append(")");
+        if (delete.getJoins() != null) {
+            for (Join join : delete.getJoins()) {
+                visit(join);
+            }
+        }
+        if (delete.getWhere() != null) {
+            sb.append("\n.where(");
+            delete.getWhere().accept(this);
+            sb.append(")");
+        }
+        if (delete.getOrderByElements() != null) {
+            sb.append("\n.orderBy(");
+            for (OrderByElement orderByElement : delete.getOrderByElements()) {
+                orderByElement.accept(this);
+            }
+            sb.append(")");
+        }
+        if (delete.getLimit() != null) {
+            Limit limit = delete.getLimit();
+            if (limit.getRowCount() != null) {
+                sb.append("\n.limit(");
+                limit.getRowCount().accept(this);
+                sb.append(")");
+            }
+        }
     }
 
     @Override
@@ -716,10 +745,20 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
             sb.append(")");
         }
         if (plainSelect.getOffset() != null) {
-            sb.append("\n.offset(").append(plainSelect.getOffset().getOffset()).append("L)");
+            sb.append("\n.offset(").append(plainSelect.getOffset().getOffset()).append(")");
         }
         if (plainSelect.getLimit() != null) {
-            // TODO how to?
+            Limit limit = plainSelect.getLimit();
+            if (limit.getOffset() != null) {
+                sb.append("\n.offset(");
+                limit.getOffset().accept(this);
+                sb.append(")");
+            }
+            if (limit.getRowCount() != null) {
+                sb.append("\n.limit(");
+                limit.getRowCount().accept(this);
+                sb.append(")");
+            }
         }
     }
 
