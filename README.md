@@ -18,8 +18,3 @@ Intellij Idea plugin
     ![screenshots](use.jpg)
 2. press <kbd>ctrl</kbd>+<kbd>alt</kbd>+<kbd>g</kbd>
 3. paste SQL anywhere
-
-## How to use Transform SQL script to Jooq code:
-1. copy SQL script from anywhere
-2. click top menu <kbd>Tools</kbd>-><kbd>CodeTools</kbd>-><kbd>Transform SQL to Jooq</kbd>
-3. paste Jooq code anywhere

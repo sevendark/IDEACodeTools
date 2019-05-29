@@ -21,11 +21,6 @@
     2. press `ctrl+alt+g`<br/>
     3. paste SQL anywhere<br/>
 
-    <h3>How to use Transform SQL Jooq code</h3>
-    1. copy SQL<br/>
-    2. select the function in the menu<br/>
-    3. paste code anywhere<br/>
-    <br/>
     depend on <a href="https://github.com/JSQLParser/JSqlParser">JSqlParser</a>
     ]]></description>
 
@@ -83,7 +78,7 @@
                 <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt g"/>
             </action>
             <action id="com.sevendark.ai.plugin.SqlToJooqAction" class="com.sevendark.ai.plugin.SqlToJooqAction"
-                    text="Transform SQL to Jooq" description="Transform SQL to jooq code">
+                    text="Transform SQL to Jooq..." description="Open dialog to transform SQL to jooq code">
             </action>
         </group>
     </actions>
