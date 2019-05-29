@@ -2,13 +2,12 @@ package com.sevendark.ai.plugin;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.ide.CopyPasteManager;
-import com.intellij.openapi.ui.Messages;
-import com.sevendark.ai.plugin.lib.sql.parser.SqlParserVisitor;
+import com.intellij.openapi.ui.DialogWrapper;
+import com.sevendark.ai.plugin.ui.SqlToJooqDialog;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
+import javax.swing.*;
 
 public class SqlToJooqAction extends AnAction {
 
@@ -18,18 +17,39 @@ public class SqlToJooqAction extends AnAction {
         super(Name);
     }
 
-    private final CopyPasteManager copyPasteManager = CopyPasteManager.getInstance();
-
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
-        String src = copyPasteManager.getContents(DataFlavor.stringFlavor);
-        if (src == null) return;
-        String res = SqlParserVisitor.of().parse(src);
-        if (res == null) {
-            Messages.showErrorDialog("Invalid SQL", Name);
-            return;
-        }
-        copyPasteManager.setContents(new StringSelection(res));
-        Messages.showInfoMessage("Success!", Name);
+        SqlToJooqDialog dialog = new SqlToJooqDialog();
+        DialogWrapper dialogWrapper = new DialogWrapper(event.getProject()) {
+            {
+                init();
+                setTitle("Convert SQL to Jooq");
+            }
+
+            @Nullable
+            @Override
+            public JComponent getPreferredFocusedComponent() {
+                return dialog.getPreferredFocusedComponent();
+            }
+
+            @NotNull
+            @Override
+            protected Action[] createActions() {
+                return new Action[0];
+            }
+
+            @Nullable
+            @Override
+            protected JComponent createCenterPanel() {
+                return dialog.getCenterPanel();
+            }
+
+            @Override
+            protected void doOKAction() {
+                super.doOKAction();
+            }
+        };
+        dialogWrapper.setSize(600, 460);
+        dialogWrapper.show();
     }
 }

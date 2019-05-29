@@ -45,7 +45,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
         this.aliasTableMap = new HashMap<>();
     }
 
-    public static SqlParserVisitor of() {
+    public static SqlParserVisitor instance() {
         return new SqlParserVisitor(new StringBuilder("dslContext"));
     }
 
@@ -53,15 +53,15 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
         return new SqlParserVisitor(new StringBuilder(dslName));
     }
 
-    public String parse(String sql) {
+    public static String parse(String sql) {
         try {
             Statement statement = CCJSqlParserUtil.parse(filterBacktick(sql));
-            SqlParserVisitor visitor = SqlParserVisitor.of();
+            SqlParserVisitor visitor = SqlParserVisitor.instance();
             statement.accept(visitor);
             return visitor.toString();
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return "Invalid SQL";
         }
     }
 

@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.sevendark.ai.plugin.AiCoder</id>
     <name>CodeTools</name>
-    <version>0.3.0</version>
+    <version>0.3.1</version>
     <vendor email="sevendark@live.com" url="https://github.com/sevendark">Personal</vendor>
 
     <description><![CDATA[
@@ -31,6 +31,9 @@
 
     <change-notes><![CDATA[
     <ul>
+        <li>version 0.3.1<br/>
+            1. improve the function of converting sql to jooq code. <br/>
+        </li>
         <li>version 0.3.0<br/>
             1. add new feature: convert sql to jooq code. (preview)<br/>
         </li>
