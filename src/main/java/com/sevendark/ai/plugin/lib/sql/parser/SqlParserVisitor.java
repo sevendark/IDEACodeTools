@@ -61,7 +61,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
             return visitor.toString();
         } catch (Exception e) {
             e.printStackTrace();
-            return "Invalid SQL";
+            return "Can not convert :(";
         }
     }
 

@@ -52,7 +52,7 @@ public class SqlToJooqDialog extends JDialog {
             if (sql != null) {
                 sqlArea.setText(sql);
             } else {
-                sqlArea.setText("Invalid jooq code");
+                sqlArea.setText("Can not convert :(");
             }
         });
 
