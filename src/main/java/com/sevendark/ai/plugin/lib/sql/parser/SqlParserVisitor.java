@@ -132,7 +132,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(LongValue longValue) {
-        sb.append(longValue.getValue()).append("L");
+        sb.append(longValue.getValue());
     }
 
     @Override
@@ -316,20 +316,28 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
         subjoin.getLeft().accept(this);
         if (subjoin.getJoinList() != null) {
             for (Join join : subjoin.getJoinList()) {
-                sb.append("\n.");
-                if (join.isInner()) {
-                    sb.append("innerJoin(");
-                } else if (join.isLeft()) {
-                    sb.append("leftOuterJoin(");
-                } else {
-                    sb.append("join(");
-                }
-                join.getRightItem().accept(this);
-                sb.append(")\n.on(");
-                join.getOnExpression().accept(this);
-                sb.append(")");
+                visit(join);
             }
         }
+    }
+
+    private void visit(Join join) {
+        sb.append("\n.");
+        if (join.isInner()) {
+            sb.append("innerJoin(");
+        } else if (join.isLeft()) {
+            sb.append("leftOuterJoin(");
+        } else if (join.isRight()) {
+            sb.append("rightOuterJoin(");
+        } else if (join.isCross()) {
+            sb.append("crossJoin(");
+        } else {
+            sb.append("join(");
+        }
+        join.getRightItem().accept(this);
+        sb.append(")\n.on(");
+        join.getOnExpression().accept(this);
+        sb.append(")");
     }
 
     @Override
@@ -666,6 +674,12 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
             aliasTableMap.putAll(aliasTableNameFinder.getTableMap(plainSelect.getFromItem()));
             onlyTable = aliasTableNameFinder.getOnlyTable();
         }
+        if (plainSelect.getJoins() != null) {
+            for (Join join : plainSelect.getJoins()) {
+                AliasTableNameFinder aliasTableNameFinder = new AliasTableNameFinder();
+                aliasTableMap.putAll(aliasTableNameFinder.getTableMap(join.getRightItem()));
+            }
+        }
         sb.append("\n.select(");
         if (plainSelect.getSelectItems() != null) {
             for (SelectItem selectItem : plainSelect.getSelectItems()) {
@@ -677,6 +691,11 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
             sb.append("\n.from(");
             plainSelect.getFromItem().accept(this);
             sb.append(")");
+        }
+        if (plainSelect.getJoins() != null) {
+            for (Join join : plainSelect.getJoins()) {
+                visit(join);
+            }
         }
         if (plainSelect.getWhere() != null) {
             sb.append("\n.where(");
@@ -690,9 +709,11 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
             plainSelect.getHaving().accept(this);
         }
         if (plainSelect.getOrderByElements() != null) {
+            sb.append("\n.orderBy(");
             for (OrderByElement orderByElement : plainSelect.getOrderByElements()) {
                 orderByElement.accept(this);
             }
+            sb.append(")");
         }
         if (plainSelect.getOffset() != null) {
             sb.append("\n.offset(").append(plainSelect.getOffset().getOffset()).append("L)");
@@ -729,12 +750,21 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(GroupByElement groupBy) {
-        System.out.println(groupBy.getClass().getName() + "    " + groupBy.toString());
+        if (groupBy.getGroupByExpressions() != null) {
+            sb.append("\n.groupBy(");
+            for (Expression expression : groupBy.getGroupByExpressions()) {
+                sb.append(",");
+                expression.accept(this);
+            }
+            sb.append(")");
+        }
     }
 
     @Override
     public void visit(OrderByElement orderBy) {
-        System.out.println(orderBy.getClass().getName() + "    " + orderBy.toString());
+        sb.append(",");
+        orderBy.getExpression().accept(this);
+        sb.append(orderBy.isAsc() ? ".asc()" : ".desc()");
     }
 
     @Override
