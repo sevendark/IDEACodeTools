@@ -93,7 +93,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
             }
             ss.append("\n");
         }
-        ss.append(sb.toString().replace("(,", "("));
+        ss.append(sb.toString().replaceAll(",\\s*\\)", ")"));
         ss.append(";\n// TODO may need to add fetch()/execute()/... at the end of the code, and don't forget to format it;\n");
         return ss.toString();
     }
@@ -147,7 +147,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(HexValue hexValue) {
-        todoInfo.add("Not implemented:    " + hexValue.getClass().getName() + "    " + hexValue.toString());
+        sb.append(hexValue.getValue());
     }
 
     @Override
@@ -283,7 +283,10 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(LikeExpression likeExpression) {
-        todoInfo.add("Not implemented:    " + likeExpression.getClass().getName() + "    " + likeExpression.toString());
+        likeExpression.getLeftExpression().accept(this);
+        sb.append(likeExpression.isCaseInsensitive() ? ".likeIgnoreCase(" : ".like(");
+        likeExpression.getRightExpression().accept(this);
+        sb.append(")");
     }
 
     @Override
@@ -401,8 +404,8 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
     @Override
     public void visit(ExpressionList expressionList) {
         for (Expression expression : expressionList.getExpressions()) {
-            sb.append(",");
             expression.accept(this);
+            sb.append(", ");
         }
     }
 
@@ -846,8 +849,13 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
         }
         sb.append("\n.select(");
         if (plainSelect.getSelectItems() != null) {
+            int c = 1;
             for (SelectItem selectItem : plainSelect.getSelectItems()) {
                 selectItem.accept(this);
+                if (c % 3 == 0) {
+                    sb.append("\n");
+                }
+                c++;
             }
         }
         sb.append(")");
@@ -927,8 +935,8 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
         if (groupBy.getGroupByExpressions() != null) {
             sb.append("\n.groupBy(");
             for (Expression expression : groupBy.getGroupByExpressions()) {
-                sb.append(",");
                 expression.accept(this);
+                sb.append(", ");
             }
             sb.append(")");
         }
@@ -936,9 +944,9 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(OrderByElement orderBy) {
-        sb.append(",");
         orderBy.getExpression().accept(this);
         sb.append(orderBy.isAsc() ? ".asc()" : ".desc()");
+        sb.append(", ");
     }
 
     @Override
@@ -958,16 +966,16 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(AllTableColumns allTableColumns) {
-        sb.append(",");
         allTableColumns.getTable().accept((FromItemVisitor) this);
+        sb.append(", ");
     }
 
     @Override
     public void visit(SelectExpressionItem selectExpressionItem) {
-        sb.append(",");
         selectExpressionItem.getExpression().accept(this);
         if (selectExpressionItem.getAlias() != null) {
             sb.append(".as(\"").append(selectExpressionItem.getAlias().getName()).append("\")");
         }
+        sb.append(", ");
     }
 }
