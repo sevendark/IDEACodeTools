@@ -94,7 +94,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
             ss.append("\n");
         }
         ss.append(sb.toString().replace("(,", "("));
-        ss.append(";");
+        ss.append(";\n// TODO may need to add fetch()/execute()/... at the end of the code, and don't forget to format it;\n");
         return ss.toString();
     }
 
@@ -167,7 +167,14 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(Parenthesis parenthesis) {
-        parenthesis.getExpression().accept(this);
+        Expression expression = parenthesis.getExpression();
+        if (expression instanceof Parenthesis) {
+            expression.accept(this);
+        } else {
+            sb.append("(");
+            expression.accept(this);
+            sb.append(")");
+        }
     }
 
     @Override
