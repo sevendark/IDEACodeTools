@@ -27,7 +27,9 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, SelectVisitor, SelectItemVisitor,
@@ -36,6 +38,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
     private StringBuilder sb;
     private String onlyTable;
     private Map<String, String> aliasTableMap;
+    private List<String> todoInfo;
 
     private SqlParserVisitor() {
     }
@@ -43,6 +46,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
     private SqlParserVisitor(StringBuilder sb) {
         this.sb = sb;
         this.aliasTableMap = new HashMap<>();
+        this.todoInfo = new ArrayList<>();
     }
 
     public static SqlParserVisitor instance() {
@@ -72,6 +76,11 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
     @Override
     public String toString() {
         StringBuilder ss = new StringBuilder();
+        if (!todoInfo.isEmpty()) {
+            for (String todoStr : todoInfo) {
+                ss.append("// TODO ").append(todoStr).append(";\n");
+            }
+        }
         if (!aliasTableMap.isEmpty()) {
             for (Map.Entry<String, String> entry : aliasTableMap.entrySet()) {
                 String tableName = entry.getValue();
@@ -82,6 +91,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
                         .append(tableName.toUpperCase())
                         .append(".as(\"").append(alias).append("\");\n");
             }
+            ss.append("\n");
         }
         ss.append(sb.toString().replace("(,", "("));
         ss.append(";");
@@ -90,12 +100,12 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(BitwiseRightShift aThis) {
-        System.out.println(aThis.getClass().getName() + "    " + aThis.toString());
+        todoInfo.add("Not implemented:    " + aThis.getClass().getName() + "    " + aThis.toString());
     }
 
     @Override
     public void visit(BitwiseLeftShift aThis) {
-        System.out.println(aThis.getClass().getName() + "    " + aThis.toString());
+        todoInfo.add("Not implemented:    " + aThis.getClass().getName() + "    " + aThis.toString());
     }
 
     @Override
@@ -112,17 +122,17 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(SignedExpression signedExpression) {
-        System.out.println(signedExpression.getClass().getName() + "    " + signedExpression.toString());
+        todoInfo.add("Not implemented:    " + signedExpression.getClass().getName() + "    " + signedExpression.toString());
     }
 
     @Override
     public void visit(JdbcParameter jdbcParameter) {
-        System.out.println(jdbcParameter.getClass().getName() + "    " + jdbcParameter.toString());
+        todoInfo.add("Not implemented:    " + jdbcParameter.getClass().getName() + "    " + jdbcParameter.toString());
     }
 
     @Override
     public void visit(JdbcNamedParameter jdbcNamedParameter) {
-        System.out.println(jdbcNamedParameter.getClass().getName() + "    " + jdbcNamedParameter.toString());
+        todoInfo.add("Not implemented:    " + jdbcNamedParameter.getClass().getName() + "    " + jdbcNamedParameter.toString());
     }
 
     @Override
@@ -137,22 +147,22 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(HexValue hexValue) {
-        System.out.println(hexValue.getClass().getName() + "    " + hexValue.toString());
+        todoInfo.add("Not implemented:    " + hexValue.getClass().getName() + "    " + hexValue.toString());
     }
 
     @Override
     public void visit(DateValue dateValue) {
-        System.out.println(dateValue.getClass().getName() + "    " + dateValue.toString());
+        todoInfo.add("Not implemented:    " + dateValue.getClass().getName() + "    " + dateValue.toString());
     }
 
     @Override
     public void visit(TimeValue timeValue) {
-        System.out.println(timeValue.getClass().getName() + "    " + timeValue.toString());
+        todoInfo.add("Not implemented:    " + timeValue.getClass().getName() + "    " + timeValue.toString());
     }
 
     @Override
     public void visit(TimestampValue timestampValue) {
-        System.out.println(timestampValue.getClass().getName() + "    " + timestampValue.toString());
+        todoInfo.add("Not implemented:    " + timestampValue.getClass().getName() + "    " + timestampValue.toString());
     }
 
     @Override
@@ -167,22 +177,34 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(Addition addition) {
-        System.out.println(addition.getClass().getName() + "    " + addition.toString());
+        addition.getLeftExpression().accept(this);
+        sb.append(".add(");
+        addition.getRightExpression().accept(this);
+        sb.append(")");
     }
 
     @Override
     public void visit(Division division) {
-        System.out.println(division.getClass().getName() + "    " + division.toString());
+        division.getLeftExpression().accept(this);
+        sb.append(".divide(");
+        division.getRightExpression().accept(this);
+        sb.append(")");
     }
 
     @Override
     public void visit(Multiplication multiplication) {
-        System.out.println(multiplication.getClass().getName() + "    " + multiplication.toString());
+        multiplication.getLeftExpression().accept(this);
+        sb.append(".multiply(");
+        multiplication.getRightExpression().accept(this);
+        sb.append(")");
     }
 
     @Override
     public void visit(Subtraction subtraction) {
-        System.out.println(subtraction.getClass().getName() + "    " + subtraction.toString());
+        subtraction.getLeftExpression().accept(this);
+        sb.append(".minus(");
+        subtraction.getRightExpression().accept(this);
+        sb.append(")");
     }
 
     @Override
@@ -203,7 +225,11 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(Between between) {
-        System.out.println(between.getClass().getName() + "    " + between.toString());
+        between.getLeftExpression().accept(this);
+        sb.append(between.isNot() ? "\n.notBetween(" : "\n.between(");
+        between.getBetweenExpressionStart().accept(this);
+        between.getBetweenExpressionEnd().accept(this);
+        sb.append(")");
     }
 
     @Override
@@ -250,7 +276,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(LikeExpression likeExpression) {
-        System.out.println(likeExpression.getClass().getName() + "    " + likeExpression.toString());
+        todoInfo.add("Not implemented:    " + likeExpression.getClass().getName() + "    " + likeExpression.toString());
     }
 
     @Override
@@ -308,7 +334,12 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(SubSelect subSelect) {
-        System.out.println(subSelect.getClass().getName() + "    " + subSelect.toString());
+        sb.append("DSL");
+        subSelect.getSelectBody().accept(this);
+        if (subSelect.getAlias() != null) {
+            sb.append(".asTable(\"").append(subSelect.getAlias().getName()).append("\")");
+        }
+        todoInfo.add("sub-select alias not fully implemented.");
     }
 
     @Override
@@ -342,22 +373,22 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(LateralSubSelect lateralSubSelect) {
-        System.out.println(lateralSubSelect.getClass().getName() + "    " + lateralSubSelect.toString());
+        todoInfo.add("Not implemented:    " + lateralSubSelect.getClass().getName() + "    " + lateralSubSelect.toString());
     }
 
     @Override
     public void visit(ValuesList valuesList) {
-        System.out.println(valuesList.getClass().getName() + "    " + valuesList.toString());
+        todoInfo.add("Not implemented:    " + valuesList.getClass().getName() + "    " + valuesList.toString());
     }
 
     @Override
     public void visit(TableFunction tableFunction) {
-        System.out.println(tableFunction.getClass().getName() + "    " + tableFunction.toString());
+        todoInfo.add("Not implemented:    " + tableFunction.getClass().getName() + "    " + tableFunction.toString());
     }
 
     @Override
     public void visit(ParenthesisFromItem aThis) {
-        System.out.println(aThis.getClass().getName() + "    " + aThis.toString());
+        todoInfo.add("Not implemented:    " + aThis.getClass().getName() + "    " + aThis.toString());
     }
 
     @Override
@@ -370,12 +401,12 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(NamedExpressionList namedExpressionList) {
-        System.out.println(namedExpressionList.getClass().getName() + "    " + namedExpressionList.toString());
+        todoInfo.add("Not implemented:    " + namedExpressionList.getClass().getName() + "    " + namedExpressionList.toString());
     }
 
     @Override
     public void visit(MultiExpressionList multiExprList) {
-        System.out.println(multiExprList.getClass().getName() + "    " + multiExprList.toString());
+        todoInfo.add("Not implemented:    " + multiExprList.getClass().getName() + "    " + multiExprList.toString());
     }
 
     @Override
@@ -402,167 +433,167 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(WhenClause whenClause) {
-        System.out.println(whenClause.getClass().getName() + "    " + whenClause.toString());
+        todoInfo.add("Not implemented:    " + whenClause.getClass().getName() + "    " + whenClause.toString());
     }
 
     @Override
     public void visit(ExistsExpression existsExpression) {
-        System.out.println(existsExpression.getClass().getName() + "    " + existsExpression.toString());
+        todoInfo.add("Not implemented:    " + existsExpression.getClass().getName() + "    " + existsExpression.toString());
     }
 
     @Override
     public void visit(AllComparisonExpression allComparisonExpression) {
-        System.out.println(allComparisonExpression.getClass().getName() + "    " + allComparisonExpression.toString());
+        todoInfo.add("Not implemented:    " + allComparisonExpression.getClass().getName() + "    " + allComparisonExpression.toString());
     }
 
     @Override
     public void visit(AnyComparisonExpression anyComparisonExpression) {
-        System.out.println(anyComparisonExpression.getClass().getName() + "    " + anyComparisonExpression.toString());
+        todoInfo.add("Not implemented:    " + anyComparisonExpression.getClass().getName() + "    " + anyComparisonExpression.toString());
     }
 
     @Override
     public void visit(Concat concat) {
-        System.out.println(concat.getClass().getName() + "    " + concat.toString());
+        todoInfo.add("Not implemented:    " + concat.getClass().getName() + "    " + concat.toString());
     }
 
     @Override
     public void visit(Matches matches) {
-        System.out.println(matches.getClass().getName() + "    " + matches.toString());
+        todoInfo.add("Not implemented:    " + matches.getClass().getName() + "    " + matches.toString());
     }
 
     @Override
     public void visit(BitwiseAnd bitwiseAnd) {
-        System.out.println(bitwiseAnd.getClass().getName() + "    " + bitwiseAnd.toString());
+        todoInfo.add("Not implemented:    " + bitwiseAnd.getClass().getName() + "    " + bitwiseAnd.toString());
     }
 
     @Override
     public void visit(BitwiseOr bitwiseOr) {
-        System.out.println(bitwiseOr.getClass().getName() + "    " + bitwiseOr.toString());
+        todoInfo.add("Not implemented:    " + bitwiseOr.getClass().getName() + "    " + bitwiseOr.toString());
     }
 
     @Override
     public void visit(BitwiseXor bitwiseXor) {
-        System.out.println(bitwiseXor.getClass().getName() + "    " + bitwiseXor.toString());
+        todoInfo.add("Not implemented:    " + bitwiseXor.getClass().getName() + "    " + bitwiseXor.toString());
     }
 
     @Override
     public void visit(CastExpression cast) {
-        System.out.println(cast.getClass().getName() + "    " + cast.toString());
+        todoInfo.add("Not implemented:    " + cast.getClass().getName() + "    " + cast.toString());
     }
 
     @Override
     public void visit(Modulo modulo) {
-        System.out.println(modulo.getClass().getName() + "    " + modulo.toString());
+        todoInfo.add("Not implemented:    " + modulo.getClass().getName() + "    " + modulo.toString());
     }
 
     @Override
     public void visit(AnalyticExpression aexpr) {
-        System.out.println(aexpr.getClass().getName() + "    " + aexpr.toString());
+        todoInfo.add("Not implemented:    " + aexpr.getClass().getName() + "    " + aexpr.toString());
     }
 
     @Override
     public void visit(ExtractExpression eexpr) {
-        System.out.println(eexpr.getClass().getName() + "    " + eexpr.toString());
+        todoInfo.add("Not implemented:    " + eexpr.getClass().getName() + "    " + eexpr.toString());
     }
 
     @Override
     public void visit(IntervalExpression iexpr) {
-        System.out.println(iexpr.getClass().getName() + "    " + iexpr.toString());
+        todoInfo.add("Not implemented:    " + iexpr.getClass().getName() + "    " + iexpr.toString());
     }
 
     @Override
     public void visit(OracleHierarchicalExpression oexpr) {
-        System.out.println(oexpr.getClass().getName() + "    " + oexpr.toString());
+        todoInfo.add("Not implemented:    " + oexpr.getClass().getName() + "    " + oexpr.toString());
     }
 
     @Override
     public void visit(RegExpMatchOperator rexpr) {
-        System.out.println(rexpr.getClass().getName() + "    " + rexpr.toString());
+        todoInfo.add("Not implemented:    " + rexpr.getClass().getName() + "    " + rexpr.toString());
     }
 
     @Override
     public void visit(JsonExpression jsonExpr) {
-        System.out.println(jsonExpr.getClass().getName() + "    " + jsonExpr.toString());
+        todoInfo.add("Not implemented:    " + jsonExpr.getClass().getName() + "    " + jsonExpr.toString());
     }
 
     @Override
     public void visit(JsonOperator jsonExpr) {
-        System.out.println(jsonExpr.getClass().getName() + "    " + jsonExpr.toString());
+        todoInfo.add("Not implemented:    " + jsonExpr.getClass().getName() + "    " + jsonExpr.toString());
     }
 
     @Override
     public void visit(RegExpMySQLOperator regExpMySQLOperator) {
-        System.out.println(regExpMySQLOperator.getClass().getName() + "    " + regExpMySQLOperator.toString());
+        todoInfo.add("Not implemented:    " + regExpMySQLOperator.getClass().getName() + "    " + regExpMySQLOperator.toString());
     }
 
     @Override
     public void visit(UserVariable var) {
-        System.out.println(var.getClass().getName() + "    " + var.toString());
+        todoInfo.add("Not implemented:    " + var.getClass().getName() + "    " + var.toString());
     }
 
     @Override
     public void visit(NumericBind bind) {
-        System.out.println(bind.getClass().getName() + "    " + bind.toString());
+        todoInfo.add("Not implemented:    " + bind.getClass().getName() + "    " + bind.toString());
     }
 
     @Override
     public void visit(KeepExpression aexpr) {
-        System.out.println(aexpr.getClass().getName() + "    " + aexpr.toString());
+        todoInfo.add("Not implemented:    " + aexpr.getClass().getName() + "    " + aexpr.toString());
     }
 
     @Override
     public void visit(MySQLGroupConcat groupConcat) {
-        System.out.println(groupConcat.getClass().getName() + "    " + groupConcat.toString());
+        todoInfo.add("Not implemented:    " + groupConcat.getClass().getName() + "    " + groupConcat.toString());
     }
 
     @Override
     public void visit(ValueListExpression valueList) {
-        System.out.println(valueList.getClass().getName() + "    " + valueList.toString());
+        todoInfo.add("Not implemented:    " + valueList.getClass().getName() + "    " + valueList.toString());
     }
 
     @Override
     public void visit(RowConstructor rowConstructor) {
-        System.out.println(rowConstructor.getClass().getName() + "    " + rowConstructor.toString());
+        todoInfo.add("Not implemented:    " + rowConstructor.getClass().getName() + "    " + rowConstructor.toString());
     }
 
     @Override
     public void visit(OracleHint hint) {
-        System.out.println(hint.getClass().getName() + "    " + hint.toString());
+        todoInfo.add("Not implemented:    " + hint.getClass().getName() + "    " + hint.toString());
     }
 
     @Override
     public void visit(TimeKeyExpression timeKeyExpression) {
-        System.out.println(timeKeyExpression.getClass().getName() + "    " + timeKeyExpression.toString());
+        todoInfo.add("Not implemented:    " + timeKeyExpression.getClass().getName() + "    " + timeKeyExpression.toString());
     }
 
     @Override
     public void visit(DateTimeLiteralExpression literal) {
-        System.out.println(literal.getClass().getName() + "    " + literal.toString());
+        todoInfo.add("Not implemented:    " + literal.getClass().getName() + "    " + literal.toString());
     }
 
     @Override
     public void visit(NotExpression aThis) {
-        System.out.println(aThis.getClass().getName() + "    " + aThis.toString());
+        todoInfo.add("Not implemented:    " + aThis.getClass().getName() + "    " + aThis.toString());
     }
 
     @Override
     public void visit(NextValExpression aThis) {
-        System.out.println(aThis.getClass().getName() + "    " + aThis.toString());
+        todoInfo.add("Not implemented:    " + aThis.getClass().getName() + "    " + aThis.toString());
     }
 
     @Override
     public void visit(CollateExpression aThis) {
-        System.out.println(aThis.getClass().getName() + "    " + aThis.toString());
+        todoInfo.add("Not implemented:    " + aThis.getClass().getName() + "    " + aThis.toString());
     }
 
     @Override
     public void visit(Comment comment) {
-        System.out.println(comment.getClass().getName() + "    " + comment.toString());
+        todoInfo.add("Not implemented:    " + comment.getClass().getName() + "    " + comment.toString());
     }
 
     @Override
     public void visit(Commit commit) {
-        System.out.println(commit.getClass().getName() + "    " + commit.toString());
+        todoInfo.add("Not implemented:    " + commit.getClass().getName() + "    " + commit.toString());
     }
 
     @Override
@@ -601,77 +632,143 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(Update update) {
-        System.out.println(update.getClass().getName() + "    " + update.toString());
+        if (update.getTables() != null) {
+            for (Table table: update.getTables()) {
+                AliasTableNameFinder aliasTableNameFinder = new AliasTableNameFinder();
+                aliasTableMap.putAll(aliasTableNameFinder.getTableMap(table));
+                onlyTable = aliasTableNameFinder.getOnlyTable();
+            }
+        }
+        if (update.getFromItem() != null) {
+            AliasTableNameFinder aliasTableNameFinder = new AliasTableNameFinder();
+            aliasTableMap.putAll(aliasTableNameFinder.getTableMap(update.getFromItem()));
+            onlyTable = aliasTableNameFinder.getOnlyTable();
+        }
+        if (update.getJoins() != null) {
+            for (Join join : update.getJoins()) {
+                AliasTableNameFinder aliasTableNameFinder = new AliasTableNameFinder();
+                aliasTableMap.putAll(aliasTableNameFinder.getTableMap(join.getRightItem()));
+            }
+        }
+        sb.append("\n.update(");
+        if (update.getTables() != null) {
+            for (Table table: update.getTables()) {
+                table.accept((FromItemVisitor) this);
+            }
+        }
+        sb.append(")");
+        if (update.getColumns() != null && update.getExpressions() != null) {
+            int l = Math.min(update.getColumns().size(), update.getExpressions().size());
+            for (int i = 0; i < l; i++) {
+                Column column = update.getColumns().get(i);
+                Expression expression = update.getExpressions().get(i);
+                sb.append("\n.set(");
+                column.accept(this);
+                sb.append(", ");
+                expression.accept(this);
+                sb.append(")");
+            }
+        }
+        if (update.getFromItem() != null) {
+            sb.append("\n.from(");
+            update.getFromItem().accept(this);
+            sb.append(")");
+        }
+        if (update.getJoins() != null) {
+            for (Join join : update.getJoins()) {
+                visit(join);
+            }
+        }
+        if (update.getWhere() != null) {
+            sb.append("\n.where(");
+            update.getWhere().accept(this);
+            sb.append(")");
+        }
+        if (update.getOrderByElements() != null) {
+            sb.append("\n.orderBy(");
+            for (OrderByElement orderByElement : update.getOrderByElements()) {
+                orderByElement.accept(this);
+            }
+            sb.append(")");
+        }
+        if (update.getLimit() != null) {
+            Limit limit = update.getLimit();
+            if (limit.getRowCount() != null) {
+                sb.append("\n.limit(");
+                limit.getRowCount().accept(this);
+                sb.append(")");
+            }
+        }
     }
 
     @Override
     public void visit(Insert insert) {
-        System.out.println(insert.getClass().getName() + "    " + insert.toString());
+        todoInfo.add("Not implemented:    " + insert.getClass().getName() + "    " + insert.toString());
     }
 
     @Override
     public void visit(Replace replace) {
-        System.out.println(replace.getClass().getName() + "    " + replace.toString());
+        todoInfo.add("Not implemented:    " + replace.getClass().getName() + "    " + replace.toString());
     }
 
     @Override
     public void visit(Drop drop) {
-        System.out.println(drop.getClass().getName() + "    " + drop.toString());
+        todoInfo.add("Not implemented:    " + drop.getClass().getName() + "    " + drop.toString());
     }
 
     @Override
     public void visit(Truncate truncate) {
-        System.out.println(truncate.getClass().getName() + "    " + truncate.toString());
+        todoInfo.add("Not implemented:    " + truncate.getClass().getName() + "    " + truncate.toString());
     }
 
     @Override
     public void visit(CreateIndex createIndex) {
-        System.out.println(createIndex.getClass().getName() + "    " + createIndex.toString());
+        todoInfo.add("Not implemented:    " + createIndex.getClass().getName() + "    " + createIndex.toString());
     }
 
     @Override
     public void visit(CreateTable createTable) {
-        System.out.println(createTable.getClass().getName() + "    " + createTable.toString());
+        todoInfo.add("Not implemented:    " + createTable.getClass().getName() + "    " + createTable.toString());
     }
 
     @Override
     public void visit(CreateView createView) {
-        System.out.println(createView.getClass().getName() + "    " + createView.toString());
+        todoInfo.add("Not implemented:    " + createView.getClass().getName() + "    " + createView.toString());
     }
 
     @Override
     public void visit(AlterView alterView) {
-        System.out.println(alterView.getClass().getName() + "    " + alterView.toString());
+        todoInfo.add("Not implemented:    " + alterView.getClass().getName() + "    " + alterView.toString());
     }
 
     @Override
     public void visit(Alter alter) {
-        System.out.println(alter.getClass().getName() + "    " + alter.toString());
+        todoInfo.add("Not implemented:    " + alter.getClass().getName() + "    " + alter.toString());
     }
 
     @Override
     public void visit(Statements stmts) {
-        System.out.println(stmts.getClass().getName() + "    " + stmts.toString());
+        todoInfo.add("Not implemented:    " + stmts.getClass().getName() + "    " + stmts.toString());
     }
 
     @Override
     public void visit(Execute execute) {
-        System.out.println(execute.getClass().getName() + "    " + execute.toString());
+        todoInfo.add("Not implemented:    " + execute.getClass().getName() + "    " + execute.toString());
     }
 
     @Override
     public void visit(SetStatement set) {
-        System.out.println(set.getClass().getName() + "    " + set.toString());
+        todoInfo.add("Not implemented:    " + set.getClass().getName() + "    " + set.toString());
     }
 
     @Override
     public void visit(ShowStatement set) {
-        System.out.println(set.getClass().getName() + "    " + set.toString());
+        todoInfo.add("Not implemented:    " + set.getClass().getName() + "    " + set.toString());
     }
 
     @Override
     public void visit(Merge merge) {
-        System.out.println(merge.getClass().getName() + "    " + merge.toString());
+        todoInfo.add("Not implemented:    " + merge.getClass().getName() + "    " + merge.toString());
     }
 
     @Override
@@ -683,17 +780,17 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(Upsert upsert) {
-        System.out.println(upsert.getClass().getName() + "    " + upsert.toString());
+        todoInfo.add("Not implemented:    " + upsert.getClass().getName() + "    " + upsert.toString());
     }
 
     @Override
     public void visit(UseStatement use) {
-        System.out.println(use.getClass().getName() + "    " + use.toString());
+        todoInfo.add("Not implemented:    " + use.getClass().getName() + "    " + use.toString());
     }
 
     @Override
     public void visit(Block block) {
-        System.out.println(block.getClass().getName() + "    " + block.toString());
+        todoInfo.add("Not implemented:    " + block.getClass().getName() + "    " + block.toString());
     }
 
     @Override
@@ -709,7 +806,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
                 aliasTableMap.putAll(aliasTableNameFinder.getTableMap(join.getRightItem()));
             }
         }
-        sb.append("\n.select(");
+        sb.append(".select(");
         if (plainSelect.getSelectItems() != null) {
             for (SelectItem selectItem : plainSelect.getSelectItems()) {
                 selectItem.accept(this);
@@ -764,27 +861,27 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(SetOperationList setOpList) {
-        System.out.println(setOpList.getClass().getName() + "    " + setOpList.toString());
+        todoInfo.add("Not implemented:    " + setOpList.getClass().getName() + "    " + setOpList.toString());
     }
 
     @Override
     public void visit(WithItem withItem) {
-        System.out.println(withItem.getClass().getName() + "    " + withItem.toString());
+        todoInfo.add("Not implemented:    " + withItem.getClass().getName() + "    " + withItem.toString());
     }
 
     @Override
     public void visit(ValuesStatement values) {
-        System.out.println(values.getClass().getName() + "    " + values.toString());
+        todoInfo.add("Not implemented:    " + values.getClass().getName() + "    " + values.toString());
     }
 
     @Override
     public void visit(DescribeStatement describe) {
-        System.out.println(describe.getClass().getName() + "    " + describe.toString());
+        todoInfo.add("Not implemented:    " + describe.getClass().getName() + "    " + describe.toString());
     }
 
     @Override
     public void visit(ExplainStatement aThis) {
-        System.out.println(aThis.getClass().getName() + "    " + aThis.toString());
+        todoInfo.add("Not implemented:    " + aThis.getClass().getName() + "    " + aThis.toString());
     }
 
     @Override
@@ -808,12 +905,12 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(Pivot pivot) {
-        System.out.println(pivot.getClass().getName() + "    " + pivot.toString());
+        todoInfo.add("Not implemented:    " + pivot.getClass().getName() + "    " + pivot.toString());
     }
 
     @Override
     public void visit(PivotXml pivot) {
-        System.out.println(pivot.getClass().getName() + "    " + pivot.toString());
+        todoInfo.add("Not implemented:    " + pivot.getClass().getName() + "    " + pivot.toString());
     }
 
     @Override
