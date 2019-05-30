@@ -84,6 +84,8 @@ public class SqlParserVisitorTest {
 
     private static String sql106 = "select t.id from (select id, iis from table2) as t where t.iis in (343, 45857, 1235)";
 
+    private static String sql107 = "select t.id from t where t.iis is true";
+
     private static String sql201 = "delete from tbl_ett where e_id = 456 limit 10";
 
     private static String sql301 = "update tblkkkk  " +
@@ -113,7 +115,7 @@ public class SqlParserVisitorTest {
     private static String sql405 = "insert into tbll(id, vv) select id, nn from tblse";
 
     public static void main(String[] args) {
-        System.out.println(SqlParserVisitor.parse(sql302));
+        System.out.println(SqlParserVisitor.parse(sql107));
     }
 
 }

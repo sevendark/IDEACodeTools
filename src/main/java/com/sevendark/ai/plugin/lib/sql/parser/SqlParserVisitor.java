@@ -27,6 +27,8 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -64,8 +66,10 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
             statement.accept(visitor);
             return visitor.toString();
         } catch (Exception e) {
-            e.printStackTrace();
-            return "Can not convert :(";
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            String stackTrace = sw.toString();
+            return "Can not convert :(\n\n" + stackTrace;
         }
     }
 
