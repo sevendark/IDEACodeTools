@@ -1,8 +1,8 @@
 package com.sevendark.ai.plugin.lib.sql;
 
 import com.sevendark.ai.plugin.lib.Constant;
+import com.sevendark.ai.plugin.lib.sql.formatter.HibernateSqlFormatter;
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.engine.jdbc.internal.BasicFormatterImpl;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +31,7 @@ public class JooqToSqlConverter {
             parent.body = root;
             root.forEach(e -> appendSQL(e, parent));
             if(sqlResult.length() != 0){
-                return new BasicFormatterImpl().format(sqlResult.toString());
+                return new HibernateSqlFormatter().format(sqlResult.toString());
             }
         }catch (Exception e){
             e.printStackTrace();
