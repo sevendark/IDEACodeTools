@@ -406,7 +406,13 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(MultiExpressionList multiExprList) {
-        todoInfo.add("Not implemented:    " + multiExprList.getClass().getName() + "    " + multiExprList.toString());
+        if (multiExprList.getExprList() != null) {
+            for (ExpressionList expressionList : multiExprList.getExprList()) {
+                sb.append("\n.values(");
+                expressionList.accept(this);
+                sb.append(")");
+            }
+        }
     }
 
     @Override
@@ -588,7 +594,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(Comment comment) {
-        todoInfo.add("Not implemented:    " + comment.getClass().getName() + "    " + comment.toString());
+        sb.append("\n// ").append(comment.toString()).append("\n");
     }
 
     @Override
@@ -703,7 +709,32 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
 
     @Override
     public void visit(Insert insert) {
-        todoInfo.add("Not implemented:    " + insert.getClass().getName() + "    " + insert.toString());
+        if (insert.getTable() != null) {
+            onlyTable = insert.getTable().getName().toUpperCase();
+        }
+        sb.append("\n.insertInto(");
+        if (insert.getColumns() != null) {
+            for (Column column : insert.getColumns()) {
+                sb.append(",");
+                column.accept(this);
+            }
+        } else if (insert.getTable() != null) {
+            sb.append(insert.getTable().getName().toUpperCase());
+        }
+        sb.append(")");
+        if (insert.getItemsList() != null) {
+            ItemsList itemsList = insert.getItemsList();
+            if (itemsList instanceof MultiExpressionList) {
+                itemsList.accept(this);
+            } else {
+                sb.append("\n.values(");
+                itemsList.accept(this);
+                sb.append(")");
+            }
+        }
+        if (insert.getSelect() != null) {
+            insert.getSelect().accept(this);
+        }
     }
 
     @Override
@@ -806,7 +837,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
                 aliasTableMap.putAll(aliasTableNameFinder.getTableMap(join.getRightItem()));
             }
         }
-        sb.append(".select(");
+        sb.append("\n.select(");
         if (plainSelect.getSelectItems() != null) {
             for (SelectItem selectItem : plainSelect.getSelectItems()) {
                 selectItem.accept(this);
