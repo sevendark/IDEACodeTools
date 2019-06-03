@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.sevendark.ai.plugin.AiCoder</id>
     <name>CodeTools</name>
-    <version>0.3.1</version>
+    <version>0.3.2</version>
     <vendor email="sevendark@live.com" url="https://github.com/sevendark">Personal</vendor>
 
     <description><![CDATA[
@@ -21,7 +21,7 @@
     2. press `ctrl+alt+g`<br/>
     3. paste SQL anywhere<br/>
     <br/>
-    depend on <a href="https://github.com/JSQLParser/JSqlParser">JSqlParser</a>
+    depend on Hibernate BasicFormatterImpl and <a href="https://github.com/JSQLParser/JSqlParser">JSqlParser</a>
     <br/><br/>
     <a href="https://github.com/sevendark/IDEACodeTools/issues/new/choose">Feedback</a>
     <br/>
@@ -29,6 +29,10 @@
 
     <change-notes><![CDATA[
     <ul>
+        <li>version 0.3.2<br/>
+            1. Convert sql to jooq code: support update and insert. <br/>
+            2. Reduce size of the plugin. <br/>
+        </li>
         <li>version 0.3.1<br/>
             1. improve the function of converting sql to jooq code. <br/>
         </li>

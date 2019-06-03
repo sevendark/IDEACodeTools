@@ -44,10 +44,6 @@ public class SqlToJooqAction extends AnAction {
                 return dialog.getCenterPanel();
             }
 
-            @Override
-            protected void doOKAction() {
-                super.doOKAction();
-            }
         };
         dialogWrapper.setSize(730, 460);
         dialogWrapper.show();
