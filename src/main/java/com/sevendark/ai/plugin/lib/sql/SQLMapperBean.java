@@ -1,6 +1,6 @@
 package com.sevendark.ai.plugin.lib.sql;
 
-import org.apache.commons.lang.StringUtils;
+import com.sevendark.ai.plugin.lib.util.StringUtils;
 
 public class SQLMapperBean {
     public boolean needParen = false;

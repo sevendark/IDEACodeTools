@@ -2,7 +2,7 @@ package com.sevendark.ai.plugin.lib.sql;
 
 import com.sevendark.ai.plugin.lib.Constant;
 import com.sevendark.ai.plugin.lib.sql.formatter.HibernateSqlFormatter;
-import org.apache.commons.lang.StringUtils;
+import com.sevendark.ai.plugin.lib.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +29,7 @@ public class JooqToSqlConverter {
             ini(text);
             SQLStatement parent = new SQLStatement();
             parent.body = root;
+            parent.body.removeIf(e -> !SQLMapper.MYSQL.replaceMap.containsKey(e.refName.toString()));
             root.forEach(e -> appendSQL(e, parent));
             if(sqlResult.length() != 0){
                 return new HibernateSqlFormatter().format(sqlResult.toString());
