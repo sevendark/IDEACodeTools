@@ -21,8 +21,11 @@ public class JooqToSqlConverter {
     private List<SQLStatement> root;
 
     public static String convert(String text) {
+        if(StringUtils.isBlank(text)){
+            return "";
+        }
         text = text.replaceAll(JAVA_COMMENT, "");
-        final StringBuilder selectedText = new StringBuilder(Objects.requireNonNull(text)
+        final StringBuilder selectedText = new StringBuilder(text
                 .chars()
                 .boxed().map(e -> Character.toString((char)e.intValue()))
                 .filter(e ->  e.matches("[^\\s]+"))
