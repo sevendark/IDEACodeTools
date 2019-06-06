@@ -9,12 +9,13 @@ public interface Constant {
    String VAR = "(\\w*[a-z]+\\w*\\.?)+";
    String STR = "^\"[^\"]+\"$";
    String METHOD = "\\.?(([a-zA-Z0-9_]+)\\.)*[a-zA-Z_]+\\(?";
+   String JAVA_COMMENT = "//[\\S ]*";
    List<String> supportLanuage = new ArrayList<String>(){{
       add("JAVA");
       add("Scala");
    }};
 
    static void test(){
-     Pattern.compile(METHOD + VAR + VAR + STR);
+     Pattern.compile(METHOD + VAR + VAR + STR + JAVA_COMMENT);
    }
 }

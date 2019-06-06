@@ -1,5 +1,6 @@
 package com.sevendark.ai.plugin.lib.sql.parser;
 
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
@@ -65,11 +66,10 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
             SqlParserVisitor visitor = SqlParserVisitor.instance();
             statement.accept(visitor);
             return visitor.toString();
+        } catch (JSQLParserException e) {
+            return "// Please Check your sql is correct.\n// tips: not support 'is true' at now";
         } catch (Exception e) {
-            StringWriter sw = new StringWriter();
-            e.printStackTrace(new PrintWriter(sw));
-            String stackTrace = sw.toString();
-            return "Can not convert :(\n\n" + stackTrace;
+            return "// Can not convert, cause:" + e.getClass().getSimpleName() + " : " + e.getMessage();
         }
     }
 
@@ -98,7 +98,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
             ss.append("\n");
         }
         ss.append(sb.toString().replaceAll(",\\s*\\)", ")"));
-        ss.append(";\n// TODO may need to add fetch()/execute()/... at the end of the code, and don't forget to format it;\n");
+        ss.append(";\n// TODO may need to add fetch()/execute()/... at the end of the code,\n// and don't forget to format it;\n");
         return ss.toString();
     }
 

@@ -2,10 +2,14 @@ package com.sevendark.ai.plugin.lib.sql;
 
 import com.sevendark.ai.plugin.lib.Constant;
 import com.sevendark.ai.plugin.lib.sql.formatter.HibernateSqlFormatter;
-import org.apache.commons.lang.StringUtils;
+import com.sevendark.ai.plugin.lib.util.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static com.sevendark.ai.plugin.lib.Constant.JAVA_COMMENT;
 
 public class JooqToSqlConverter {
 
@@ -17,11 +21,20 @@ public class JooqToSqlConverter {
     private List<SQLStatement> root;
 
     public static String convert(String text) {
-        return new JooqToSqlConverter().doConvert(new StringBuilder(text));
-    }
-
-    public static String convert(StringBuilder text) {
-        return new JooqToSqlConverter().doConvert(text);
+        if(StringUtils.isBlank(text)){
+            return "";
+        }
+        text = text.replaceAll(JAVA_COMMENT, "");
+        final StringBuilder selectedText = new StringBuilder(text
+                .chars()
+                .boxed().map(e -> Character.toString((char)e.intValue()))
+                .filter(e ->  e.matches("[^\\s]+"))
+                .collect(Collectors.joining())
+        );
+        if(StringUtils.isBlank(text)){
+            return "";
+        }
+        return new JooqToSqlConverter().doConvert(new StringBuilder(selectedText));
     }
 
     public String doConvert(StringBuilder text) {
@@ -99,6 +112,8 @@ public class JooqToSqlConverter {
                 sqlResult.append(")");
             }
             sqlResult.append(" ");
+        }else {
+            sqlResult.append(rule.placeholder);
         }
 
     }
