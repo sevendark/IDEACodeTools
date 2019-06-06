@@ -69,7 +69,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
         } catch (JSQLParserException e) {
             return "// Please Check your sql is correct.\n// tips: not support 'is true' at now";
         } catch (Exception e) {
-            return "// Can not convert, cause:" + e.getMessage();
+            return "// Can not convert, cause:" + e.getClass().getSimpleName() + " : " + e.getMessage();
         }
     }
 
