@@ -1,10 +1,12 @@
 package com.sevendark.ai.plugin.ui;
 
+import com.intellij.openapi.ide.CopyPasteManager;
 import com.sevendark.ai.plugin.lib.sql.JooqToSqlConverter;
 import com.sevendark.ai.plugin.lib.sql.parser.SqlParserVisitor;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -19,7 +21,7 @@ public class SqlToJooqDialog extends JDialog {
     private JButton jooqToSqlBtn;
     private JLabel introLabel;
 
-    //private final CopyPasteManager copyPasteManager = CopyPasteManager.getInstance();
+    private final CopyPasteManager copyPasteManager = CopyPasteManager.getInstance();
 
     public SqlToJooqDialog() {
         setContentPane(contentPane);
@@ -58,12 +60,12 @@ public class SqlToJooqDialog extends JDialog {
 
         copySqlBtn.addActionListener(e -> {
             String str = sqlArea.getText();
-            //copyPasteManager.setContents(new StringSelection(str));
+            copyPasteManager.setContents(new StringSelection(str));
         });
 
         copyJooqBtn.addActionListener(e -> {
             String str = jooqArea.getText();
-            //copyPasteManager.setContents(new StringSelection(str));
+            copyPasteManager.setContents(new StringSelection(str));
         });
     }
 
