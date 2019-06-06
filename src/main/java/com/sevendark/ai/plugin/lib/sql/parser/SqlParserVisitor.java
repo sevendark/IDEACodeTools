@@ -1,5 +1,6 @@
 package com.sevendark.ai.plugin.lib.sql.parser;
 
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
@@ -65,6 +66,8 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
             SqlParserVisitor visitor = SqlParserVisitor.instance();
             statement.accept(visitor);
             return visitor.toString();
+        } catch (JSQLParserException e) {
+            return "Please Check your sql is correct";
         } catch (Exception e) {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
@@ -98,7 +101,7 @@ public class SqlParserVisitor implements StatementVisitor, ExpressionVisitor, Se
             ss.append("\n");
         }
         ss.append(sb.toString().replaceAll(",\\s*\\)", ")"));
-        ss.append(";\n// TODO may need to add fetch()/execute()/... at the end of the code, and don't forget to format it;\n");
+        ss.append(";\n// TODO may need to add fetch()/execute()/... \n// at the end of the code, and don't forget to format it;\n");
         return ss.toString();
     }
 

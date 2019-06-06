@@ -31,14 +31,7 @@ public class GenerateJooqSqlAction extends AnAction {
     public void actionPerformed(@NotNull AnActionEvent event) {
         if(!validAndSet(event)) return;
 
-        final StringBuilder selectedText = new StringBuilder(Objects.requireNonNull(caret.getSelectedText())
-                .chars()
-                .boxed().map(e -> Character.toString((char)e.intValue()))
-                .filter(e ->  e.matches("[^\\s]+"))
-                .collect(Collectors.joining())
-        );
-
-        String result = JooqToSqlConverter.convert(selectedText);
+        String result = JooqToSqlConverter.convert(caret.getSelectedText());
         if (result != null) {
             copyPasteManager.setContents(new StringSelection(result));
         } else {

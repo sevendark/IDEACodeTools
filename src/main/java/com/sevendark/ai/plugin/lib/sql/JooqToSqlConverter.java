@@ -5,7 +5,11 @@ import com.sevendark.ai.plugin.lib.sql.formatter.HibernateSqlFormatter;
 import com.sevendark.ai.plugin.lib.util.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static com.sevendark.ai.plugin.lib.Constant.JAVA_COMMENT;
 
 public class JooqToSqlConverter {
 
@@ -17,11 +21,15 @@ public class JooqToSqlConverter {
     private List<SQLStatement> root;
 
     public static String convert(String text) {
-        return new JooqToSqlConverter().doConvert(new StringBuilder(text));
-    }
+        text = text.replaceAll(JAVA_COMMENT, "");
+        final StringBuilder selectedText = new StringBuilder(Objects.requireNonNull(text)
+                .chars()
+                .boxed().map(e -> Character.toString((char)e.intValue()))
+                .filter(e ->  e.matches("[^\\s]+"))
+                .collect(Collectors.joining())
+        );
 
-    public static String convert(StringBuilder text) {
-        return new JooqToSqlConverter().doConvert(text);
+        return new JooqToSqlConverter().doConvert(new StringBuilder(selectedText));
     }
 
     public String doConvert(StringBuilder text) {
@@ -29,7 +37,6 @@ public class JooqToSqlConverter {
             ini(text);
             SQLStatement parent = new SQLStatement();
             parent.body = root;
-            parent.body.removeIf(e -> !SQLMapper.MYSQL.replaceMap.containsKey(e.refName.toString()));
             root.forEach(e -> appendSQL(e, parent));
             if(sqlResult.length() != 0){
                 return new HibernateSqlFormatter().format(sqlResult.toString());
@@ -100,6 +107,8 @@ public class JooqToSqlConverter {
                 sqlResult.append(")");
             }
             sqlResult.append(" ");
+        }else {
+            sqlResult.append(rule.placeholder);
         }
 
     }
