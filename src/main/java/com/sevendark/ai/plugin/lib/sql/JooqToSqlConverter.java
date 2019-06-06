@@ -31,7 +31,9 @@ public class JooqToSqlConverter {
                 .filter(e ->  e.matches("[^\\s]+"))
                 .collect(Collectors.joining())
         );
-
+        if(StringUtils.isBlank(text)){
+            return "";
+        }
         return new JooqToSqlConverter().doConvert(new StringBuilder(selectedText));
     }
 
