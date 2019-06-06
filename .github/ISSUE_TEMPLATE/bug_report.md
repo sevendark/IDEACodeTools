@@ -1,8 +1,17 @@
-the code trying to convert
+---
+name: Bug report
+about: Some bug
+title: ''
+labels: ''
+assignees: ''
+
+---
+
+The code trying to convert
 
 ```
 
 
 ```
 
-the error msg:
+The error msg:
