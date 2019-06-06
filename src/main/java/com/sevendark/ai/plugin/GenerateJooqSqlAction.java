@@ -18,7 +18,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class GenerateJooqSqlAction extends AnAction {
-    private static final String Name = "Transform Jooq Code to SQL Script";
+    private static final String Name = "Transform Jooq to Sql";
 
     public GenerateJooqSqlAction() {
         super(Name);
