@@ -173,6 +173,6 @@ public class JooqToSqlConverter {
             str.append("'");
             return str.toString();
         }
-        return str.toString().replaceAll(Constant.VAR, "---");
+        return str.toString();
     }
 }
