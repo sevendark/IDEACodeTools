@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 public interface Constant {
    String GROUP_NAME = "com.sevendark.ai.plugin.GroupedActions";
-   String VAR = "[a-z_$]+[a-zA-Z.0-9]*";
+   String VAR = "([a-z_$]+[a-zA-Z0-9]*\\.?)+";
    String STR = "^\"[^\"]+\"$";
    String METHOD = "\\.?(([a-zA-Z0-9_]+)\\.)*[a-zA-Z_]+\\(?";
    String JAVA_COMMENT = "//[\\S ]*";
