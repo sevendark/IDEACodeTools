@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 public interface Constant {
    String GROUP_NAME = "com.sevendark.ai.plugin.GroupedActions";
-   String VAR = "([a-zA-Z_$]\\w*\\.?)+";
+   String VAR = "[a-z_$]+[a-zA-Z.0-9]*";
    String STR = "^\"[^\"]+\"$";
    String METHOD = "\\.?(([a-zA-Z0-9_]+)\\.)*[a-zA-Z_]+\\(?";
    String JAVA_COMMENT = "//[\\S ]*";
@@ -16,6 +16,10 @@ public interface Constant {
    }};
 
    static void test(){
-     Pattern.compile(METHOD + VAR + VAR + STR + JAVA_COMMENT);
+     Pattern.compile(METHOD + VAR + STR + JAVA_COMMENT);
+   }
+
+   public static void main(String[] args) {
+      "extraMemberInvoiceTbl.RELATION_ID".matches(VAR);
    }
 }
