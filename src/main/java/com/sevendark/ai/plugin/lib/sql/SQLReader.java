@@ -18,7 +18,7 @@ public class SQLReader {
             Objects.nonNull(statement);
             statement = getNext(selectedText)){
             statement.i = i++;
-            if(statement.bodyStr.toString().matches(Constant.STR)){
+            if(statement.bodyStr.toString().matches(Constant.STR) || statement.bodyStr.toString().matches(Constant.NUM)){
                 List<SQLStatement> temp = new ArrayList<>();
                 SQLStatement s = new SQLStatement();
                 s.refName = new StringBuilder(statement.bodyStr);

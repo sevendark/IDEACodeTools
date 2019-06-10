@@ -8,6 +8,7 @@ public interface Constant {
    String GROUP_NAME = "com.sevendark.ai.plugin.GroupedActions";
    String VAR = ".*[a-z].*";
    String STR = "^\"[^\"]+\"$";
+   String NUM = "\\d+";
    String METHOD = "\\.?(([a-zA-Z0-9_]+)\\.)*[a-zA-Z_]+\\(?";
    String JAVA_COMMENT = "//[\\S ]*";
    List<String> supportLanuage = new ArrayList<String>(){{
@@ -15,11 +16,9 @@ public interface Constant {
       add("Scala");
    }};
 
+   @SuppressWarnings("ResultOfMethodCallIgnored")
    static void test(){
-     Pattern.compile(METHOD + VAR + STR + JAVA_COMMENT);
+     Pattern.compile(METHOD + VAR + STR + JAVA_COMMENT + NUM);
    }
 
-   public static void main(String[] args) {
-      "extraMemberInvoiceTbl.RELATION_ID".matches(VAR);
-   }
 }
