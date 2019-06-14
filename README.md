@@ -8,7 +8,9 @@ Intellij Idea plugin
 1. Update `play.libs.F.Option` to `java.util.Optional`
 2. Transform Jooq code to SQL script
 3. Transform SQL script to Jooq code
- 
+
+![screenshots](ScreenShot.png)
+
 ## Install:
 1. <kbd>Settings</kbd> -> <kbd>Plugins</kbd> -> <kbd>Marketplace</kbd> search `CodeTools` to install
 2. Open [plugin page](https://plugins.jetbrains.com/plugin/11467-aicoder) to download and install from disk
