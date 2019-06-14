@@ -1,5 +1,5 @@
-![icon](src/main/resources/META-INF/pluginIcon.svg)
-# IDEACodeTools
+
+# IDEACodeTools ![icon](src/main/resources/META-INF/pluginIcon.svg) 
 Intellij Idea plugin
 
 ## How to find menu:
