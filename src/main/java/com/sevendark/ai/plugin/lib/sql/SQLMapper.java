@@ -35,10 +35,10 @@ public enum SQLMapper {
             put("in", SQLMapperBean.build().needParen(true).needQualifier(true).sqlName("in"));
             put("notIn", SQLMapperBean.build().needParen(true).needQualifier(true).sqlName("not in"));
             put("andExists", SQLMapperBean.build().needParen(true).needQualifier(true).sqlName("and exists"));
-            put("ge", SQLMapperBean.build().needParen(true).needQualifier(true).sqlName(">"));
-            put("gt", SQLMapperBean.build().needParen(true).needQualifier(true).sqlName(">="));
-            put("le", SQLMapperBean.build().needParen(true).needQualifier(true).sqlName("<"));
-            put("lt", SQLMapperBean.build().needParen(true).needQualifier(true).sqlName("<="));
+            put("ge", SQLMapperBean.build().needParen(true).needQualifier(true).sqlName(">="));
+            put("gt", SQLMapperBean.build().needParen(true).needQualifier(true).sqlName(">"));
+            put("le", SQLMapperBean.build().needParen(true).needQualifier(true).sqlName("<="));
+            put("lt", SQLMapperBean.build().needParen(true).needQualifier(true).sqlName("<"));
             put("isTrue", SQLMapperBean.build().needQualifier(true).sqlName("= True"));
             put("falseCondition", SQLMapperBean.build().sqlName("0=1"));
             put("trueCondition", SQLMapperBean.build().sqlName("1=1"));
