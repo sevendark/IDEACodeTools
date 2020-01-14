@@ -50,7 +50,7 @@ public class GenerateJooqSqlAction extends AnAction {
             Messages.showInfoMessage("Please Select a piece of JOOQ code", Name);
             return false;
         }
-        if(!Constant.supportLanuage.contains(language.getID())){
+        if(!Constant.supportLanuage.contains(language.getID().toLowerCase())){
             Messages.showInfoMessage("Only Support : " + Constant.supportLanuage.toString(), Name);
         }
         caret = event.getData(DataKeys.CARET);
