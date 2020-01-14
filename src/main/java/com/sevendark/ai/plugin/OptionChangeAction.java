@@ -2,14 +2,16 @@ package com.sevendark.ai.plugin;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
+import com.intellij.psi.search.SearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.util.Query;
 import com.sevendark.ai.plugin.lib.Constant;
@@ -20,7 +22,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -36,99 +37,130 @@ public class OptionChangeAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent actionEvent) {
         final Project project = actionEvent.getProject();
+        if (Objects.isNull(project)) return;
+
+        PsiElement selected = actionEvent.getData(CommonDataKeys.PSI_ELEMENT);
+        if(selected == null) {
+            Messages.showMessageDialog(project,
+                    "Please select a file or directory",
+                    Name, Messages.getWarningIcon());
+            return;
+        }
+
         int ask = Messages.showOkCancelDialog(project,
-                "Are you sure want to replace all Play Option to Java8 Optional? (This may UI freezes a few minus)",
+                "Are you sure want to replace Play Option to Java8 Optional " +
+                        "in directory or file you selected? (This may UI freezes a few minus)",
                 Name, Messages.getWarningIcon());
         if (Messages.CANCEL == ask) {
             return;
         }
-        if (Objects.isNull(project)) return;
-        final ModuleManager moduleManager = ModuleManager.getInstance(project);
-        final JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(project);
-        final PsiElementFactory javaFactory = javaPsiFacade.getElementFactory();
-        final JavaCodeStyleManager codeStyleManager = JavaCodeStyleManager.getInstance(project);
 
-        Stream.of(moduleManager.getModules()).forEach(module -> {
+        CommandProcessor.getInstance().executeCommand(project, () -> ApplicationManager.getApplication()
+                .runWriteAction(() -> {
 
-            PsiClass f = getF(module, javaPsiFacade).orElse(null);
-            if (Objects.isNull(f)) return;
+                    final JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(project);
+                    final PsiElementFactory javaFactory = javaPsiFacade.getElementFactory();
+                    final JavaCodeStyleManager codeStyleManager = JavaCodeStyleManager.getInstance(project);
 
-            PsiClass option = getPlayOption(module, javaPsiFacade).orElse(null);
-            if (Objects.isNull(option)) return;
+                    Set<PsiFile> changedFile = new HashSet<>();
+                    replace(changedFile, selected, javaPsiFacade, javaFactory, codeStyleManager);
+                    changedFile.forEach(codeStyleManager::optimizeImports);
 
-            PsiClass optional = javaPsiFacade.findClass("java.util.Optional", module.getModuleWithLibrariesScope());
-            if (Objects.isNull(optional)) return;
+                }), Name, Constant.GROUP_NAME);
 
-            final PsiMethod optionSome = getOptionSome(option);
-            final PsiMethod optionNone = getOptionNone(option);
-            final PsiMethod optionGetOrElse = getOptionGetOrElse(option);
-            final PsiMethod fSome = getFSome(f);
-            final PsiMethod fNone = getFNone(f);
+    }
 
-            CommandProcessor.getInstance().executeCommand(project, () -> ApplicationManager.getApplication()
-                    .runWriteAction(() -> {
-                        Set<PsiFile> changedFile = new HashSet<>();
-                        Query<PsiReference> search;
+    private void replace(Set<PsiFile> changedFile, PsiElement selected, JavaPsiFacade javaPsiFacade,
+                         PsiElementFactory javaFactory, JavaCodeStyleManager codeStyleManager){
 
-                        search = ReferencesSearch.search(optionGetOrElse, module.getModuleScope());
-                        replaceGetOrElse2OrElse(search, changedFile, javaFactory, codeStyleManager);
+        //prepare
+        //========================================================================
+        //========================================================================
+        final Module module = ModuleUtil.findModuleForPsiElement(selected);
+        if(module == null) return;
+        SearchScope searchScope = selected.getUseScope();
 
-                        search = ReferencesSearch.search(option, module.getModuleScope());
-                        search.forEach(e -> {
-                            PsiJavaCodeReferenceElement javaCode;
-                            if (e instanceof PsiJavaCodeReferenceElement) {
-                                javaCode = (PsiJavaCodeReferenceElement) e;
-                            } else {
-                                return;
-                            }
-                            AtomicReference<PsiElement> replaced = new AtomicReference<>();
-                            changedFile.add(javaCode.getContainingFile());
-                            if (javaCode.getParent() instanceof PsiReferenceExpression) {
-                                replaceRef(javaFactory, replaced, javaCode);
-                            } else if (javaCode.getParent() instanceof PsiTypeElement) {
-                                PsiJavaCodeReferenceElement optionalRef = javaFactory.createReferenceElementByType(
-                                        javaFactory.createType(optional, javaCode.getTypeParameters()));
-                                replaced.set(javaCode.replace(optionalRef));
-                                if (Objects.nonNull(replaced.get())) {
-                                    codeStyleManager.shortenClassReferences(replaced.get());
-                                }
-                                if (replaced.get().getParent().getParent() instanceof PsiLocalVariable ||
-                                        replaced.get().getParent().getParent() instanceof PsiParameter) {
+        //prepare f and option class
+        PsiClass f = getF(module, javaPsiFacade).orElse(null);
+        if (Objects.isNull(f)) return;
 
-                                    PsiVariable variable = (PsiVariable) replaced.get().getParent().getParent();
-                                    Query<PsiReference> variableSearch = ReferencesSearch.search(variable, variable.getResolveScope());
-                                    variableSearch.forEach(m -> {
-                                        if (!(m instanceof PsiReferenceExpression)) return;
-                                        PsiReferenceExpression variableRef = ((PsiReferenceExpression) m);
-                                        if (variableRef.getParent().getParent() instanceof PsiMethodCallExpression) {
-                                            repalceMethodCall(variableRef, javaFactory, replaced);
-                                        } else if (variableRef.getParent() instanceof PsiForeachStatement) {
-                                            replaceForEach(variableRef, javaFactory);
-                                        }
-                                    });
-                                }
-                            }
-                            if (Objects.nonNull(replaced.get())) {
-                                codeStyleManager.shortenClassReferences(replaced.get());
-                            }
-                        });
+        PsiClass option = getPlayOption(module, javaPsiFacade).orElse(null);
+        if (Objects.isNull(option)) return;
 
-                        search = ReferencesSearch.search(optionNone, module.getModuleScope());
-                        replaceNone2Empty(search, changedFile, javaFactory, codeStyleManager);
+        PsiClass optional = javaPsiFacade.findClass("java.util.Optional", module.getModuleWithLibrariesScope());
+        if (Objects.isNull(optional)) return;
+        final PsiMethod optionSome = getOptionSome(option);
+        final PsiMethod optionNone = getOptionNone(option);
+        final PsiMethod optionGetOrElse = getOptionGetOrElse(option);
+        final PsiMethod fSome = getFSome(f);
+        final PsiMethod fNone = getFNone(f);
+        //========================================================================
+        //========================================================================
 
-                        search = ReferencesSearch.search(optionSome, module.getModuleScope());
-                        replaceSome2ofnullable(search, changedFile, javaFactory, codeStyleManager);
+        Query<PsiReference> search;
 
-                        search = ReferencesSearch.search(fSome, module.getModuleScope());
-                        replaceSome2ofnullable(search, changedFile, javaFactory, codeStyleManager);
+        search = ReferencesSearch.search(optionGetOrElse, searchScope);
+        replaceGetOrElse2OrElse(search, changedFile, javaFactory, codeStyleManager);
 
-                        search = ReferencesSearch.search(fNone, module.getModuleScope());
-                        replaceNone2Empty(search, changedFile, javaFactory, codeStyleManager);
+        search = ReferencesSearch.search(option, searchScope);
+        replaceJavaOptionRef(search, changedFile, javaFactory, codeStyleManager, optional);
 
-                        changedFile.forEach(codeStyleManager::optimizeImports);
-                    }), Name, Constant.GROUP_NAME);
+        search = ReferencesSearch.search(optionNone, searchScope);
+        replaceNone2Empty(search, changedFile, javaFactory, codeStyleManager);
+
+        search = ReferencesSearch.search(optionSome, searchScope);
+        replaceSome2ofNullable(search, changedFile, javaFactory, codeStyleManager);
+
+        search = ReferencesSearch.search(fSome, searchScope);
+        replaceSome2ofNullable(search, changedFile, javaFactory, codeStyleManager);
+
+        search = ReferencesSearch.search(fNone, searchScope);
+        replaceNone2Empty(search, changedFile, javaFactory, codeStyleManager);
+
+
+    }
+
+    private void replaceJavaOptionRef(Query<PsiReference> search, Set<PsiFile> changedFile,
+                                      PsiElementFactory javaFactory, JavaCodeStyleManager codeStyleManager,
+                                      PsiClass optional){
+        search.forEach(e -> {
+            PsiJavaCodeReferenceElement javaCode;
+            if (e instanceof PsiJavaCodeReferenceElement) {
+                javaCode = (PsiJavaCodeReferenceElement) e;
+            } else {
+                return;
+            }
+            AtomicReference<PsiElement> replaced = new AtomicReference<>();
+            changedFile.add(javaCode.getContainingFile());
+            if (javaCode.getParent() instanceof PsiReferenceExpression) {
+                replaceRef(javaFactory, replaced, javaCode);
+            } else if (javaCode.getParent() instanceof PsiTypeElement) {
+                PsiJavaCodeReferenceElement optionalRef = javaFactory.createReferenceElementByType(
+                        javaFactory.createType(optional, javaCode.getTypeParameters()));
+                replaced.set(javaCode.replace(optionalRef));
+                if (Objects.nonNull(replaced.get())) {
+                    codeStyleManager.shortenClassReferences(replaced.get());
+                }
+                if (replaced.get().getParent().getParent() instanceof PsiLocalVariable ||
+                        replaced.get().getParent().getParent() instanceof PsiParameter) {
+
+                    PsiVariable variable = (PsiVariable) replaced.get().getParent().getParent();
+                    Query<PsiReference> variableSearch = ReferencesSearch.search(variable, variable.getResolveScope());
+                    variableSearch.forEach(m -> {
+                        if (!(m instanceof PsiReferenceExpression)) return;
+                        PsiReferenceExpression variableRef = ((PsiReferenceExpression) m);
+                        if (variableRef.getParent().getParent() instanceof PsiMethodCallExpression) {
+                            replaceMethodCall(variableRef, javaFactory, replaced);
+                        } else if (variableRef.getParent() instanceof PsiForeachStatement) {
+                            replaceForEach(variableRef, javaFactory);
+                        }
+                    });
+                }
+            }
+            if (Objects.nonNull(replaced.get())) {
+                codeStyleManager.shortenClassReferences(replaced.get());
+            }
         });
-
     }
 
     private void replaceRef(PsiElementFactory javaFactory, AtomicReference<PsiElement> replaced, PsiJavaCodeReferenceElement javaCode) {
@@ -154,7 +186,7 @@ public class OptionChangeAction extends AnAction {
         }
     }
 
-    private void repalceMethodCall(PsiReferenceExpression variableRef, PsiElementFactory javaFactory, AtomicReference<PsiElement> replaced) {
+    private void replaceMethodCall(PsiReferenceExpression variableRef, PsiElementFactory javaFactory, AtomicReference<PsiElement> replaced) {
         PsiMethodCallExpression variableCall = (PsiMethodCallExpression) variableRef.getParent().getParent();
         if (variableCall.getMethodExpression().getLastChild().textMatches("isDefined")) {
             final PsiMethodCallExpression isPresentCall =
@@ -212,7 +244,7 @@ public class OptionChangeAction extends AnAction {
         variableRef.getParent().replace(ifStatement);
     }
 
-    private void replaceSome2ofnullable(Query<PsiReference> search, Set<PsiFile> changedFile, PsiElementFactory javaFactory
+    private void replaceSome2ofNullable(Query<PsiReference> search, Set<PsiFile> changedFile, PsiElementFactory javaFactory
             , JavaCodeStyleManager codeStyleManager) {
         search.forEach(e -> {
             PsiJavaCodeReferenceElement javaCode;

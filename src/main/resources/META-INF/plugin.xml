@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.sevendark.ai.plugin.AiCoder</id>
     <name>CodeTools</name>
-    <version>0.3.5</version>
+    <version>0.3.6</version>
     <vendor email="sevendark@live.com" url="https://github.com/sevendark">Personal</vendor>
 
     <description><![CDATA[
@@ -29,6 +29,10 @@
 
     <change-notes><![CDATA[
     <ul>
+        <li>version 0.3.6<br/>
+            1. support cover kotlin jooq code to sql <br/>
+            2. transform Play Option to Java Optional now support select directory <br/>
+        </li>
         <li>version 0.3.5<br/>
             1. add icon <br/>
         </li>
