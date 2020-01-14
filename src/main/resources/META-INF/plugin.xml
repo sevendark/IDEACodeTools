@@ -30,7 +30,8 @@
     <change-notes><![CDATA[
     <ul>
         <li>version 0.3.6<br/>
-            1. support kotlin <br/>
+            1. support cover kotlin jooq code to sql <br/>
+            2. transform Play Option to Java Optional now support select directory <br/>
         </li>
         <li>version 0.3.5<br/>
             1. add icon <br/>
