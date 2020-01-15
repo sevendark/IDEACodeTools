@@ -1,6 +1,9 @@
 
 # IDEACodeTools ![icon](src/main/resources/META-INF/pluginIcon.svg) 
-![JetBrains IntelliJ Plugins](https://img.shields.io/jetbrains/plugin/v/11467)
+
+![JetBrains IntelliJ Plugins](https://img.shields.io/jetbrains/plugin/v/11467)    ![JetBrains IntelliJ plugins](https://img.shields.io/jetbrains/plugin/d/11467)
+
+
 
 ## How to find menu:
 ![screenshots](ScreenShot2.png)
